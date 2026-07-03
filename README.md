@@ -3,6 +3,10 @@
 Open-source status widgets for [Claude Code](https://claude.com/claude-code). See what Claude is working on and approve permission requests without staring at the terminal — from a **dynamic island on your Mac's notch** (flagship) or an experimental **iOS home-screen widget**.
 
 <p align="center">
+  <img src="docs/island-demo.gif" width="500" alt="Real screen capture: the island under the MacBook notch expands with “Claude requests to run `pytest -q tests/`”, the user clicks Always allow, and it settles into the session overview">
+</p>
+<p align="center"><sub>Real capture: a permission request arrives, <b>Always allow</b> is clicked, the island settles into the session overview.</sub></p>
+<p align="center">
   <img src="docs/island-request.png" width="508" alt="Claude Island expanded under the MacBook notch: “Claude requests to run `npm test`” with Always allow / Allow once / Deny buttons">
 </p>
 <p align="center">

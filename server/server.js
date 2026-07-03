@@ -52,8 +52,11 @@ function truncate(s, n) {
 // A stable "kind of action" key used for Always-allow rules.
 function signatureFor(tool, input = {}) {
   if (tool === 'Bash' && typeof input.command === 'string') {
-    const first = input.command.trim().split(/\s+/)[0] || '';
-    return `Bash:${first}`;
+    // Skip leading VAR=... assignments so "FOO=bar npm test" -> "npm", and
+    // avoid junk signatures like "Bash:TAG=$(curl".
+    const tokens = input.command.trim().split(/\s+/);
+    const word = tokens.find((t) => !/^[A-Za-z_][A-Za-z0-9_]*=/.test(t)) || tokens[0] || '';
+    return `Bash:${truncate(word, 32)}`;
   }
   if (tool === 'WebFetch' && typeof input.url === 'string') {
     try { return `WebFetch:${new URL(input.url).host}`; } catch { return 'WebFetch'; }
