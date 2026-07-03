@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Build ClaudeIsland.app with plain swiftc — works with just the Xcode
 # Command Line Tools, no Xcode.app or SwiftPM required.
-#   ./build.sh          release build -> macos/ClaudeIsland.app
-#   ./build.sh --run    build then launch
+#   ./build.sh                  release build -> macos/ClaudeIsland.app
+#   ./build.sh --run            build then launch
+#   ./build.sh --readme-assets  render docs/island-*.png from the real views
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -44,6 +45,22 @@ EOF
   )
 fi
 # --------------------------------------------------------------------------
+
+if [[ "${1:-}" == "--readme-assets" ]]; then
+  DOCS="$(cd "$DIR/.." && pwd)/docs"
+  mkdir -p "$DOCS"
+  TMP_BIN="$(mktemp -d)/render-assets"
+  echo "Compiling asset renderer…"
+  swiftc -O -parse-as-library \
+    "${EXTRA_FLAGS[@]}" \
+    "$DIR/Sources/ClaudeIsland/IslandView.swift" \
+    "$DIR/Sources/ClaudeIsland/StatusModel.swift" \
+    "$DIR/Sources/ClaudeIsland/RelayClient.swift" \
+    "$DIR/Scripts/RenderReadmeAssets.swift" \
+    -o "$TMP_BIN"
+  "$TMP_BIN" "$DOCS"
+  exit 0
+fi
 
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 

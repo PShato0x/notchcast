@@ -10,7 +10,26 @@ enum Island {
     static let stone = Color(red: 0.35, green: 0.34, blue: 0.32)   // "Deny"
 
     static let expandedWidth: CGFloat = 460
-    static let expandedBodyHeight: CGFloat = 170
+    static let expandedBodyHeight: CGFloat = 132
+}
+
+/// Custom switch that fits the dark island (the native macOS switch looks
+/// foreign here and doesn't render offscreen).
+struct IslandToggle: View {
+    @Binding var isOn: Bool
+
+    var body: some View {
+        Button { isOn.toggle() } label: {
+            Capsule()
+                .fill(isOn ? Island.terracotta : Island.stone.opacity(0.5))
+                .frame(width: 30, height: 17)
+                .overlay(alignment: isOn ? .trailing : .leading) {
+                    Circle().fill(Island.paper).frame(width: 13, height: 13).padding(2)
+                }
+        }
+        .buttonStyle(.plain)
+        .animation(.spring(duration: 0.2), value: isOn)
+    }
 }
 
 struct IslandButtonStyle: ButtonStyle {
@@ -103,16 +122,14 @@ struct IslandView: View {
             Text("Code")
                 .font(.system(size: 12, design: .serif).weight(.semibold))
             Spacer()
-            Toggle(isOn: Binding(
-                get: { model.snapshot.remoteMode },
-                set: { model.setRemoteMode($0) }
-            )) {
+            HStack(spacing: 6) {
                 Text("Remote approvals")
                     .font(.system(size: 10, design: .serif))
+                IslandToggle(isOn: Binding(
+                    get: { model.snapshot.remoteMode },
+                    set: { model.setRemoteMode($0) }
+                ))
             }
-            .toggleStyle(.switch)
-            .controlSize(.mini)
-            .tint(Island.terracotta)
         }
         .foregroundStyle(Island.paperSoft)
     }
@@ -148,7 +165,7 @@ struct IslandView: View {
 
     private var sessionsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            let live = Array(model.snapshot.liveSessions.prefix(3))
+            let live = Array(model.snapshot.liveSessions.prefix(2))
             if live.isEmpty {
                 Text("No active sessions")
                     .font(.system(size: 14, design: .serif).weight(.semibold))
@@ -212,7 +229,7 @@ struct StatusDot: View {
             .opacity(shouldPulse ? (pulsing ? 0.35 : 1) : 1)
             .animation(shouldPulse ? .easeInOut(duration: 0.9).repeatForever(autoreverses: true) : .default,
                        value: pulsing)
-            .onAppear { pulsing = true }
+            .task { pulsing = true } // off the initial render pass, so offscreen snapshots get full opacity
             .id(state)
     }
 

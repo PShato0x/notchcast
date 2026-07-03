@@ -2,6 +2,16 @@
 
 Open-source status widgets for [Claude Code](https://claude.com/claude-code). See what Claude is working on and approve permission requests without staring at the terminal — from a **dynamic island on your Mac's notch** (flagship) or an experimental **iOS home-screen widget**.
 
+<p align="center">
+  <img src="docs/island-request.png" width="508" alt="Claude Island expanded under the MacBook notch: “Claude requests to run `npm test`” with Always allow / Allow once / Deny buttons">
+</p>
+<p align="center">
+  <img src="docs/island-status.png" width="380" alt="Claude Island showing a working session on hover">
+  &nbsp;
+  <img src="docs/island-collapsed.png" width="240" alt="Collapsed island: a slim strip hugging the notch with a status dot">
+</p>
+<p align="center"><sub>Rendered from the real SwiftUI views — regenerate anytime with <code>macos/build.sh --readme-assets</code>.</sub></p>
+
 ## ✳ Claude Island (macOS) — start here
 
 A tiny native app that lives around your MacBook's notch, like a dynamic island:
@@ -20,26 +30,6 @@ cd macos && ./build.sh --run    # build + launch the island (needs only Command 
 Then merge [hooks/settings.example.json](hooks/settings.example.json) into `~/.claude/settings.json` and restart Claude Code. That's the whole setup — the island reads its config from `~/.claude-widget/config.json` automatically.
 
 > `build.sh` compiles with plain `swiftc` (no Xcode.app needed) and auto-works-around a common broken-CLT issue (stale duplicate `SwiftBridging` modulemap). A SwiftPM [Package.swift](macos/Package.swift) is also included if you prefer `swift build`.
-
-```
-┌─────────────────────────────────┐
-│ ✳ │ </> Code      View Session ›│
-│                                 │
-│ Running Session from your Mac   │
-│ Coding Project V.1              │
-│                                 │
-│ Claude requests to run `npm     │
-│ test`                           │
-│                                 │
-│ ┌───────────────────────────┐   │
-│ │       Always allow        │   │
-│ ├───────────────────────────┤   │
-│ │       Allow once          │   │
-│ ├───────────────────────────┤   │
-│ │       Don't allow         │   │
-│ └───────────────────────────┘   │
-└─────────────────────────────────┘
-```
 
 ## Features
 

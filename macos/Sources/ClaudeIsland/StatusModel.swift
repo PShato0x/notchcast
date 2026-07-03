@@ -74,6 +74,14 @@ final class StatusModel: ObservableObject {
         }
     }
 
+    /// Inject state directly — used by the README asset renderer and previews
+    /// instead of a live relay.
+    func apply(snapshot: StatusSnapshot, connected: Bool) {
+        self.snapshot = snapshot
+        self.connected = connected
+        recomputeExpansion()
+    }
+
     private func recomputeExpansion() {
         if hovering || pinnedOpen {
             collapseTask?.cancel()
