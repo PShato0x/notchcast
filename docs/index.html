@@ -17,8 +17,8 @@
     --text: #F4F4F5;
     --muted: #A1A1AA;
     --faint: #71717A;
-    --accent: #8B7CF6;
-    --accent-2: #67E8F9;
+    --accent: #D97E56;
+    --accent-2: #F2B48C;
     --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Segoe UI", sans-serif;
     --mono: ui-monospace, "SF Mono", Menlo, monospace;
   }
@@ -48,8 +48,8 @@
   .hero { position: relative; text-align: center; padding: 96px 0 36px; }
   .glow { position: absolute; inset: -180px 0 auto 0; height: 560px; pointer-events: none;
           background:
-            radial-gradient(560px 300px at 50% 10%, rgba(139, 124, 246, 0.16), transparent 70%),
-            radial-gradient(420px 240px at 62% 4%, rgba(103, 232, 249, 0.07), transparent 70%); }
+            radial-gradient(560px 300px at 50% 10%, rgba(217, 126, 86, 0.16), transparent 70%),
+            radial-gradient(420px 240px at 62% 4%, rgba(242, 180, 140, 0.07), transparent 70%); }
   .hero .wrap { position: relative; }
   h1 { font-size: clamp(38px, 6.4vw, 64px); line-height: 1.06; font-weight: 700; letter-spacing: -0.025em; }
   h1 .grad { background: linear-gradient(92deg, var(--accent), var(--accent-2));
@@ -61,7 +61,7 @@
   .install-box { display: flex; align-items: center; gap: 12px; text-align: left;
                  background: #101012; border: 1px solid var(--border); border-radius: 14px;
                  padding: 14px 18px; font-family: var(--mono); font-size: 13px;
-                 box-shadow: 0 0 0 1px rgba(139,124,246,.08), 0 22px 60px rgba(0,0,0,.5); overflow-x: auto; }
+                 box-shadow: 0 0 0 1px rgba(217,126,86,.08), 0 22px 60px rgba(0,0,0,.5); overflow-x: auto; }
   .install-box .dollar { color: var(--accent); user-select: none; }
   .install-box code { white-space: nowrap; color: #D4D4D8; }
   .copy { margin-left: auto; flex: none; border: 1px solid var(--border); cursor: pointer;
@@ -75,7 +75,7 @@
   .demo { position: relative; text-align: center; padding: 56px 0 12px; }
   .frame { display: inline-block; padding: 10px; border-radius: 22px;
            background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
-           border: 1px solid var(--border); box-shadow: 0 40px 120px rgba(139, 124, 246, 0.13), 0 30px 80px rgba(0,0,0,.55); }
+           border: 1px solid var(--border); box-shadow: 0 40px 120px rgba(217, 126, 86, 0.13), 0 30px 80px rgba(0,0,0,.55); }
   .frame img { display: block; max-width: 100%; width: 560px; border-radius: 14px; }
   .demo .cap { color: var(--faint); font-size: 13px; margin-top: 16px; }
 
@@ -99,7 +99,7 @@
           padding: 24px; transition: background .18s ease; }
   .card:hover { background: var(--panel-hover); }
   .card .ico { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px;
-               border-radius: 9px; background: rgba(139, 124, 246, 0.14); color: var(--accent);
+               border-radius: 9px; background: rgba(217, 126, 86, 0.14); color: var(--accent);
                font-size: 16px; margin-bottom: 14px; }
   .card h3 { font-size: 15.5px; font-weight: 650; margin-bottom: 6px; }
   .card p { color: var(--muted); font-size: 14px; }
@@ -119,7 +119,7 @@
 
   /* cta */
   .cta { text-align: center; margin-top: 88px; padding: 56px 24px; border-radius: 24px;
-         background: radial-gradient(480px 220px at 50% 0%, rgba(139,124,246,.14), transparent 70%), var(--panel);
+         background: radial-gradient(480px 220px at 50% 0%, rgba(217,126,86,.14), transparent 70%), var(--panel);
          border: 1px solid var(--border); }
   .cta h2 { margin-bottom: 8px; }
   .cta p { color: var(--muted); font-size: 15px; margin-bottom: 26px; }

@@ -6,7 +6,7 @@ enum Island {
     static let black = Color(red: 0.043, green: 0.043, blue: 0.051)
     static let paper = Color(red: 0.957, green: 0.957, blue: 0.965)
     static let paperSoft = Color(red: 0.957, green: 0.957, blue: 0.965).opacity(0.55)
-    static let accent = Color(red: 0.545, green: 0.486, blue: 0.965)  // #8B7CF6
+    static let accent = Color(red: 0.773, green: 0.443, blue: 0.310)  // #C5714F — the Claude orange
     static let slate = Color(red: 0.20, green: 0.20, blue: 0.23)   // "Allow once"
     static let stone = Color(red: 0.33, green: 0.33, blue: 0.37)   // "Deny"
 

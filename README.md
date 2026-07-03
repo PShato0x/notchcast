@@ -37,7 +37,7 @@ Prefer to read before piping to bash? Quite right: [get.sh](get.sh). Manual setu
 
 A tiny native app that lives around your MacBook's notch, like a dynamic island:
 
-- **Collapsed**: a slim black extension of the notch with a status dot — a violet pulse while the agent works, orange when something needs you, green when idle.
+- **Collapsed**: a slim black extension of the notch with a status dot — the signature Claude-orange pulse while the agent works, bright amber when something needs you, green when idle.
 - **Auto-expands** when Claude requests permission, showing **Always allow / Allow once / Deny** right under the notch. *Always allow* saves a rule (e.g. `Bash:npm`) that auto-approves matching requests from then on.
 - **Hover** over the notch anytime to peek at active sessions and their last prompt, and to toggle remote approvals.
 - Non-activating panel: clicking buttons never steals focus from what you're doing. Menu-bar ✦ icon as fallback for Macs without a notch.
