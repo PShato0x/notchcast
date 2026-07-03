@@ -1,0 +1,110 @@
+<svg viewBox="0 0 560 195" width="560" height="195" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">
+  <title>NotchAI demo: a permission request arrives at the notch, gets approved, and the island collapses back.</title>
+  <style>
+    .island { filter: drop-shadow(0 4px 10px rgba(0,0,0,.45)); }
+    .grp { transform-box: fill-box; transform-origin: 50% 0; }
+
+    .collapsed { animation: showCollapsed 9s infinite; }
+    @keyframes showCollapsed {
+      0%, 16% { opacity: 1; }
+      19%, 81% { opacity: 0; }
+      85%, 100% { opacity: 1; }
+    }
+
+    .request { opacity: 0; animation: showRequest 9s infinite; }
+    @keyframes showRequest {
+      0%, 16% { opacity: 0; transform: scaleY(.28); }
+      21%, 52% { opacity: 1; transform: scaleY(1); }
+      56%, 100% { opacity: 0; transform: scaleY(1); }
+    }
+
+    .sessions { opacity: 0; animation: showSessions 9s infinite; }
+    @keyframes showSessions {
+      0%, 53% { opacity: 0; transform: scaleY(1); }
+      57%, 77% { opacity: 1; transform: scaleY(1); }
+      82%, 100% { opacity: 0; transform: scaleY(.3); }
+    }
+
+    .click { opacity: 0; animation: clickFlash 9s infinite; }
+    @keyframes clickFlash {
+      0%, 44% { opacity: 0; }
+      47%, 49% { opacity: .28; }
+      52%, 100% { opacity: 0; }
+    }
+
+    .dot { animation: pulse 1.6s ease-in-out infinite alternate; }
+    @keyframes pulse { from { opacity: 1; } to { opacity: .35; } }
+  </style>
+
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3E3C4F"/>
+      <stop offset="1" stop-color="#22202E"/>
+    </linearGradient>
+  </defs>
+
+  <!-- wallpaper + menu bar -->
+  <rect width="560" height="195" fill="url(#wall)"/>
+  <rect width="560" height="37" fill="rgba(0,0,0,.18)"/>
+  <g fill="rgba(255,255,255,.55)" font-size="11">
+    <text x="16" y="23" font-size="12">&#63743;</text>
+    <text x="36" y="23" font-weight="600">Finder</text>
+    <text x="82" y="23">File</text>
+    <text x="110" y="23">Edit</text>
+    <text x="140" y="23">View</text>
+    <text x="544" y="23" text-anchor="end">Fri 9:41 AM</text>
+  </g>
+
+  <!-- collapsed island -->
+  <g class="collapsed">
+    <path class="island" d="M132,0 h296 v33 a12,12 0 0 1 -12,12 H144 a12,12 0 0 1 -12,-12 Z" fill="#0B0B0D"/>
+    <text x="148" y="28" font-size="14" fill="#C5714F">&#10022;</text>
+    <circle class="dot" cx="410" cy="22" r="4" fill="#C5714F"/>
+  </g>
+
+  <!-- expanded: permission request -->
+  <g class="request grp">
+    <path class="island" d="M50,0 h460 v147 a22,22 0 0 1 -22,22 H72 a22,22 0 0 1 -22,-22 Z" fill="#0B0B0D"/>
+    <text x="70" y="27" font-size="14" fill="#C5714F">&#10022;</text>
+    <circle class="dot" cx="488" cy="22" r="4" fill="#F59E0B"/>
+
+    <g fill="rgba(244,244,245,.55)">
+      <text x="68" y="58" font-size="12" font-weight="600">&#10216;/&#10217; Code</text>
+      <text x="446" y="58" font-size="10" text-anchor="end">Remote approvals</text>
+    </g>
+    <rect x="454" y="46" width="30" height="17" rx="8.5" fill="#C5714F"/>
+    <circle cx="475.5" cy="54.5" r="6.5" fill="#F4F4F5"/>
+
+    <text x="68" y="82" font-size="10" fill="rgba(244,244,245,.55)">Running session &#183; acme-app</text>
+    <text x="68" y="102" font-size="15" font-weight="700" fill="#F4F4F5">Requests to run `cargo test`</text>
+
+    <g font-size="12" font-weight="600" text-anchor="middle">
+      <rect x="68" y="118" width="136" height="28" rx="11" fill="#C5714F"/>
+      <rect class="click" x="68" y="118" width="136" height="28" rx="11" fill="#fff"/>
+      <text x="136" y="136" fill="#F4F4F5">Always allow</text>
+      <rect x="212" y="118" width="136" height="28" rx="11" fill="#33333B"/>
+      <text x="280" y="136" fill="#F4F4F5">Allow once</text>
+      <rect x="356" y="118" width="136" height="28" rx="11" fill="#54545E"/>
+      <text x="424" y="136" fill="#F4F4F5">Deny</text>
+    </g>
+  </g>
+
+  <!-- expanded: session overview after approval -->
+  <g class="sessions grp">
+    <path class="island" d="M50,0 h460 v147 a22,22 0 0 1 -22,22 H72 a22,22 0 0 1 -22,-22 Z" fill="#0B0B0D"/>
+    <text x="70" y="27" font-size="14" fill="#C5714F">&#10022;</text>
+    <circle class="dot" cx="488" cy="22" r="4" fill="#C5714F"/>
+
+    <g fill="rgba(244,244,245,.55)">
+      <text x="68" y="58" font-size="12" font-weight="600">&#10216;/&#10217; Code</text>
+      <text x="446" y="58" font-size="10" text-anchor="end">Remote approvals</text>
+    </g>
+    <rect x="454" y="46" width="30" height="17" rx="8.5" fill="#C5714F"/>
+    <circle cx="475.5" cy="54.5" r="6.5" fill="#F4F4F5"/>
+
+    <circle cx="73" cy="86" r="3" fill="#C5714F"/>
+    <text x="84" y="90" font-size="13" font-weight="700" fill="#F4F4F5">acme-app</text>
+    <text x="492" y="90" font-size="10" text-anchor="end" fill="rgba(244,244,245,.55)">Working &#183; Bash</text>
+    <text x="84" y="108" font-size="11" fill="rgba(244,244,245,.55)">Refactor the auth flow and add tests</text>
+  </g>
+</svg>

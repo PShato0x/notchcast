@@ -3,7 +3,7 @@
 Open-source status widgets for [Claude Code](https://claude.com/claude-code). See what Claude is working on and approve permission requests without staring at the terminal — from a **dynamic island on your Mac's notch** (flagship) or an experimental **iOS home-screen widget**.
 
 <p align="center">
-  <img src="docs/island-demo.gif" width="500" alt="The island under the MacBook notch expands with “Requests to run `cargo test`”, the request is approved, and it settles back into the collapsed strip">
+  <img src="docs/island-demo.svg" width="500" alt="The island under the MacBook notch expands with “Requests to run `cargo test`”, the request is approved, and it settles back into the collapsed strip">
 </p>
 <p align="center"><sub>A permission request arrives, <b>Always allow</b> is clicked, the island settles into the session overview. All README visuals are rendered from the real SwiftUI views — regenerate with <code>macos/build.sh --readme-assets</code>.</sub></p>
 <p align="center">

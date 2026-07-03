@@ -59,10 +59,8 @@ if [[ "${1:-}" == "--readme-assets" ]]; then
     "$DIR/Scripts/RenderReadmeAssets.swift" \
     -o "$TMP/render-assets"
   "$TMP/render-assets" "$DOCS"
-  echo "Assembling demo GIF…"
-  swiftc -O -parse-as-library "${EXTRA_FLAGS[@]}" "$DIR/Scripts/MakeGif.swift" -o "$TMP/makegif"
-  GIF_DELAY=0.15 "$TMP/makegif" "$DOCS/island-demo.gif" "$DOCS"/gif-frames/f*.png
-  rm -rf "$DOCS/gif-frames"
+  # The animated demo is a hand-authored vector: docs/island-demo.svg.
+  # Keep it in sync with the theme when the island's design changes.
   exit 0
 fi
 
