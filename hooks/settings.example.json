@@ -1,0 +1,52 @@
+{
+  "$comment": "Merge this into ~/.claude/settings.json (or a project's .claude/settings.json). install.sh copies the hook scripts to ~/.claude-widget/hooks and prints this snippet with resolved paths.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|MultiEdit|Write|NotebookEdit|WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.claude-widget/hooks/permission-gate.mjs\"",
+            "timeout": 180
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node \"$HOME/.claude-widget/hooks/status-report.mjs\"", "timeout": 10 }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node \"$HOME/.claude-widget/hooks/status-report.mjs\"", "timeout": 10 }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node \"$HOME/.claude-widget/hooks/status-report.mjs\"", "timeout": 10 }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node \"$HOME/.claude-widget/hooks/status-report.mjs\"", "timeout": 10 }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node \"$HOME/.claude-widget/hooks/status-report.mjs\"", "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}
