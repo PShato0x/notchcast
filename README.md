@@ -3,9 +3,9 @@
 Open-source status widgets for [Claude Code](https://claude.com/claude-code). See what Claude is working on and approve permission requests without staring at the terminal — from a **dynamic island on your Mac's notch** (flagship) or an experimental **iOS home-screen widget**.
 
 <p align="center">
-  <img src="docs/island-demo.gif" width="500" alt="Real screen capture: the island under the MacBook notch expands with “Claude requests to run `pytest -q tests/`”, the user clicks Always allow, and it settles into the session overview">
+  <img src="docs/island-demo.gif" width="500" alt="The island under the MacBook notch expands with “Requests to run `cargo test`”, the request is approved, and it settles back into the collapsed strip">
 </p>
-<p align="center"><sub>Real capture: a permission request arrives, <b>Always allow</b> is clicked, the island settles into the session overview.</sub></p>
+<p align="center"><sub>A permission request arrives, <b>Always allow</b> is clicked, the island settles into the session overview. All README visuals are rendered from the real SwiftUI views — regenerate with <code>macos/build.sh --readme-assets</code>.</sub></p>
 <p align="center">
   <img src="docs/island-request.png" width="508" alt="Claude Island expanded under the MacBook notch: “Claude requests to run `npm test`” with Always allow / Allow once / Deny buttons">
 </p>
@@ -33,14 +33,15 @@ claude-widget uninstall   # remove services and app
 
 Prefer to read before piping to bash? Quite right: [get.sh](get.sh). Manual setup is documented below. **Website: [pshato0x.github.io/claude-widget](https://pshato0x.github.io/claude-widget/)**
 
-## ✳ Claude Island (macOS) — start here
+## ✦ Claude Island (macOS) — start here
 
 A tiny native app that lives around your MacBook's notch, like a dynamic island:
 
-- **Collapsed**: a slim black extension of the notch with a status dot — terracotta pulse while Claude works, orange when something needs you, green when idle.
+- **Collapsed**: a slim black extension of the notch with a status dot — a violet pulse while the agent works, orange when something needs you, green when idle.
 - **Auto-expands** when Claude requests permission, showing **Always allow / Allow once / Deny** right under the notch. *Always allow* saves a rule (e.g. `Bash:npm`) that auto-approves matching requests from then on.
 - **Hover** over the notch anytime to peek at active sessions and their last prompt, and to toggle remote approvals.
-- Non-activating panel: clicking buttons never steals focus from what you're doing. Menu-bar ✳ icon as fallback for Macs without a notch.
+- Non-activating panel: clicking buttons never steals focus from what you're doing. Menu-bar ✦ icon as fallback for Macs without a notch.
+- **Brand-neutral by design** — Claude Code is the first supported agent; the relay protocol and UI are agent-agnostic so other coding agents can plug in (see roadmap).
 
 ```bash
 ./install.sh                    # once: creates ~/.claude-widget (token + hooks)
@@ -71,7 +72,7 @@ Then merge [hooks/settings.example.json](hooks/settings.example.json) into `~/.c
 │  relay server (Node, :8787)           │ Tailscale  interactive buttons      │
 │   ▲                                   │      └──────────────────────────────┘
 │   │ localhost                         │
-│  ✳ Claude Island (notch app, macos/)  │
+│  ✦ Claude Island (notch app, macos/)  │
 └───────────────────────────────────────┘
 ```
 

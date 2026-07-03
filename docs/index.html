@@ -3,167 +3,269 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Claude Widget — Claude Code status on your Mac's notch</title>
-<meta name="description" content="An open-source dynamic island for your MacBook notch: see what Claude Code is working on and approve permission requests without touching the terminal.">
-<meta property="og:title" content="Claude Widget — Claude Code on your notch">
-<meta property="og:description" content="A dynamic island for your MacBook notch: live Claude Code session status and one-click permission approvals.">
+<title>Claude Widget — your coding agent, on your notch</title>
+<meta name="description" content="An open-source dynamic island for your MacBook notch: watch what your AI coding agent is doing and approve its requests with one click. Works with Claude Code today.">
+<meta property="og:title" content="Claude Widget — your coding agent, on your notch">
+<meta property="og:description" content="A dynamic island for your MacBook notch: live agent status and one-click permission approvals.">
 <meta property="og:image" content="https://pshato0x.github.io/claude-widget/island-request.png">
 <style>
   :root {
-    --cream: #F4F1EA;
-    --cream-deep: #ECE8DE;
-    --ink: #2C2925;
-    --ink-soft: rgba(44, 41, 37, 0.6);
-    --terracotta: #C5714F;
-    --terracotta-deep: #B05F3F;
-    --island: #0D0C0A;
-    --paper: #FAF8F4;
-    --serif: "New York", "Iowan Old Style", Georgia, "Times New Roman", serif;
+    --bg: #09090B;
+    --panel: rgba(255, 255, 255, 0.035);
+    --panel-hover: rgba(255, 255, 255, 0.06);
+    --border: rgba(255, 255, 255, 0.09);
+    --text: #F4F4F5;
+    --muted: #A1A1AA;
+    --faint: #71717A;
+    --accent: #8B7CF6;
+    --accent-2: #67E8F9;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Segoe UI", sans-serif;
     --mono: ui-monospace, "SF Mono", Menlo, monospace;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--cream); color: var(--ink); font-family: var(--serif); line-height: 1.6; }
-  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.6;
+         -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
 
-  nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
-  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; }
-  .brand .star { color: var(--terracotta); font-size: 22px; line-height: 1; }
-  nav a { color: var(--ink-soft); text-decoration: none; font-size: 14px; }
-  nav a:hover { color: var(--ink); }
+  /* nav */
+  nav { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(14px);
+        background: rgba(9, 9, 11, 0.72); border-bottom: 1px solid var(--border); }
+  .nav-inner { display: flex; align-items: center; gap: 28px; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 650; font-size: 15px; }
+  .spark { color: var(--accent); font-size: 17px; }
+  .nav-links { display: flex; gap: 22px; font-size: 13.5px; color: var(--muted); }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+  .nav-cta .gh { color: var(--muted); font-size: 13.5px; }
+  .nav-cta .gh:hover { color: var(--text); }
+  .btn { display: inline-block; background: var(--text); color: #0B0B0D; font-weight: 600;
+         font-size: 13.5px; padding: 8px 16px; border-radius: 10px; }
+  .btn:hover { background: #fff; }
 
-  header { text-align: center; padding: 48px 0 8px; }
-  h1 { font-size: clamp(34px, 6vw, 54px); line-height: 1.12; font-weight: 700; letter-spacing: -0.5px; }
-  h1 em { font-style: normal; color: var(--terracotta); }
-  .sub { margin: 18px auto 0; max-width: 560px; color: var(--ink-soft); font-size: 18px; }
+  /* hero */
+  .hero { position: relative; text-align: center; padding: 96px 0 36px; }
+  .glow { position: absolute; inset: -180px 0 auto 0; height: 560px; pointer-events: none;
+          background:
+            radial-gradient(560px 300px at 50% 10%, rgba(139, 124, 246, 0.16), transparent 70%),
+            radial-gradient(420px 240px at 62% 4%, rgba(103, 232, 249, 0.07), transparent 70%); }
+  .hero .wrap { position: relative; }
+  h1 { font-size: clamp(38px, 6.4vw, 64px); line-height: 1.06; font-weight: 700; letter-spacing: -0.025em; }
+  h1 .grad { background: linear-gradient(92deg, var(--accent), var(--accent-2));
+             -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { margin: 20px auto 0; max-width: 600px; color: var(--muted); font-size: 17.5px; }
+  .sub b { color: var(--text); font-weight: 600; }
 
-  .install { margin: 34px auto 10px; max-width: 640px; }
-  .install-box {
-    display: flex; align-items: center; gap: 12px;
-    background: var(--island); color: var(--paper);
-    border-radius: 16px; padding: 16px 20px;
-    font-family: var(--mono); font-size: 13.5px;
-    box-shadow: 0 14px 40px rgba(20, 15, 10, 0.25);
-    text-align: left; overflow-x: auto;
-  }
-  .install-box .dollar { color: var(--terracotta); user-select: none; }
-  .install-box code { white-space: nowrap; }
-  .copy {
-    margin-left: auto; flex: none; border: 0; cursor: pointer;
-    background: var(--terracotta); color: var(--paper);
-    font-family: var(--serif); font-weight: 600; font-size: 13px;
-    padding: 7px 14px; border-radius: 10px;
-  }
-  .copy:hover { background: var(--terracotta-deep); }
-  .req { text-align: center; color: var(--ink-soft); font-size: 13px; margin-top: 12px; }
+  .install { margin: 36px auto 0; max-width: 620px; }
+  .install-box { display: flex; align-items: center; gap: 12px; text-align: left;
+                 background: #101012; border: 1px solid var(--border); border-radius: 14px;
+                 padding: 14px 18px; font-family: var(--mono); font-size: 13px;
+                 box-shadow: 0 0 0 1px rgba(139,124,246,.08), 0 22px 60px rgba(0,0,0,.5); overflow-x: auto; }
+  .install-box .dollar { color: var(--accent); user-select: none; }
+  .install-box code { white-space: nowrap; color: #D4D4D8; }
+  .copy { margin-left: auto; flex: none; border: 1px solid var(--border); cursor: pointer;
+          background: rgba(255,255,255,.06); color: var(--text); font-family: var(--sans);
+          font-weight: 600; font-size: 12.5px; padding: 6px 13px; border-radius: 9px; }
+  .copy:hover { background: rgba(255,255,255,.12); }
+  .meta { margin-top: 14px; color: var(--faint); font-size: 12.5px; }
+  .meta span + span::before { content: "·"; margin: 0 8px; color: #3F3F46; }
 
-  .demo { text-align: center; padding: 36px 0 8px; }
-  .demo img { max-width: 100%; width: 540px; border-radius: 18px; box-shadow: 0 24px 70px rgba(20, 15, 10, 0.22); }
-  .demo .cap { color: var(--ink-soft); font-size: 13px; margin-top: 12px; }
+  /* demo */
+  .demo { position: relative; text-align: center; padding: 56px 0 12px; }
+  .frame { display: inline-block; padding: 10px; border-radius: 22px;
+           background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+           border: 1px solid var(--border); box-shadow: 0 40px 120px rgba(139, 124, 246, 0.13), 0 30px 80px rgba(0,0,0,.55); }
+  .frame img { display: block; max-width: 100%; width: 560px; border-radius: 14px; }
+  .demo .cap { color: var(--faint); font-size: 13px; margin-top: 16px; }
 
-  section { padding: 56px 0 0; }
-  h2 { font-size: 26px; margin-bottom: 22px; text-align: center; }
-  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-  .card { background: var(--paper); border: 1px solid var(--cream-deep); border-radius: 18px; padding: 22px; }
-  .card h3 { font-size: 16px; margin-bottom: 8px; }
-  .card h3 .dot { color: var(--terracotta); }
-  .card p { color: var(--ink-soft); font-size: 14.5px; }
-  .card code { font-family: var(--mono); font-size: 12.5px; background: var(--cream-deep); padding: 1px 5px; border-radius: 5px; }
+  /* agents strip */
+  .agents { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; padding: 40px 0 0; }
+  .chip { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted);
+          border: 1px solid var(--border); background: var(--panel); border-radius: 999px; padding: 7px 15px; }
+  .chip .on  { width: 7px; height: 7px; border-radius: 50%; background: #34D399; }
+  .chip .soon{ width: 7px; height: 7px; border-radius: 50%; background: #52525B; }
 
+  /* sections */
+  section { padding: 88px 0 0; }
+  .kicker { text-align: center; color: var(--accent); font-size: 12.5px; font-weight: 600;
+            letter-spacing: .12em; text-transform: uppercase; }
+  h2 { text-align: center; font-size: clamp(26px, 3.6vw, 36px); font-weight: 700;
+       letter-spacing: -0.02em; margin: 10px 0 14px; }
+  .lede { text-align: center; color: var(--muted); max-width: 560px; margin: 0 auto 40px; font-size: 15.5px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+          padding: 24px; transition: background .18s ease; }
+  .card:hover { background: var(--panel-hover); }
+  .card .ico { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px;
+               border-radius: 9px; background: rgba(139, 124, 246, 0.14); color: var(--accent);
+               font-size: 16px; margin-bottom: 14px; }
+  .card h3 { font-size: 15.5px; font-weight: 650; margin-bottom: 6px; }
+  .card p { color: var(--muted); font-size: 14px; }
+  .card code { font-family: var(--mono); font-size: 12px; background: rgba(255,255,255,.07);
+               padding: 1px 6px; border-radius: 5px; color: #D4D4D8; }
+
+  /* steps */
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .step { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+  .step .n { font-family: var(--mono); color: var(--accent); font-size: 13px; }
+  .step h3 { font-size: 15.5px; margin: 8px 0 6px; }
+  .step p { color: var(--muted); font-size: 14px; }
+
+  /* shots */
   .shots { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
-  .shots img { border-radius: 14px; max-width: 100%; }
+  .shots img { border-radius: 14px; max-width: 100%; border: 1px solid var(--border); }
 
-  .how { background: var(--paper); border: 1px solid var(--cream-deep); border-radius: 18px; padding: 26px; }
-  .how ol { margin-left: 22px; color: var(--ink-soft); font-size: 15px; }
-  .how li { margin: 8px 0; }
-  .how b { color: var(--ink); }
+  /* cta */
+  .cta { text-align: center; margin-top: 88px; padding: 56px 24px; border-radius: 24px;
+         background: radial-gradient(480px 220px at 50% 0%, rgba(139,124,246,.14), transparent 70%), var(--panel);
+         border: 1px solid var(--border); }
+  .cta h2 { margin-bottom: 8px; }
+  .cta p { color: var(--muted); font-size: 15px; margin-bottom: 26px; }
 
-  footer { margin-top: 72px; padding: 28px 0 40px; border-top: 1px solid var(--cream-deep);
-           display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
-           color: var(--ink-soft); font-size: 13.5px; }
-  footer a { color: var(--terracotta); text-decoration: none; }
+  footer { margin-top: 88px; border-top: 1px solid var(--border); padding: 44px 0 56px; }
+  .foot { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 24px; font-size: 13.5px; }
+  .foot h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--faint); margin-bottom: 12px; }
+  .foot a { display: block; color: var(--muted); margin: 7px 0; }
+  .foot a:hover { color: var(--text); }
+  .foot .blurb { color: var(--faint); font-size: 13px; max-width: 260px; margin-top: 10px; }
+  @media (max-width: 720px) { .foot { grid-template-columns: 1fr 1fr; } .nav-links { display: none; } }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <nav>
-    <div class="brand"><span class="star">✳</span> Claude Widget</div>
-    <a href="https://github.com/PShato0x/claude-widget">GitHub →</a>
-  </nav>
+<nav>
+  <div class="wrap nav-inner">
+    <a class="brand" href="#"><span class="spark">✦</span> Claude Widget</a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#agents">Agents</a>
+    </div>
+    <div class="nav-cta">
+      <a class="gh" href="https://github.com/PShato0x/claude-widget">GitHub</a>
+      <a class="btn" href="#install">Install</a>
+    </div>
+  </div>
+</nav>
 
-  <header>
-    <h1>Claude Code, living on<br>your <em>notch</em>.</h1>
-    <p class="sub">An open-source dynamic island for your MacBook: watch what Claude is working on and approve its requests — without touching the terminal.</p>
+<header class="hero">
+  <div class="glow"></div>
+  <div class="wrap">
+    <h1>Your coding agent,<br>on your <span class="grad">notch</span>.</h1>
+    <p class="sub">An open-source dynamic island for your MacBook. Watch what your AI agent is doing and approve its requests with one click — <b>without ever leaving your work</b>.</p>
 
-    <div class="install">
+    <div class="install" id="install">
       <div class="install-box">
         <span class="dollar">$</span>
         <code id="cmd">curl -fsSL https://raw.githubusercontent.com/PShato0x/claude-widget/main/get.sh | bash</code>
         <button class="copy" onclick="navigator.clipboard.writeText(document.getElementById('cmd').textContent).then(()=>{this.textContent='Copied ✓';setTimeout(()=>this.textContent='Copy',1600)})">Copy</button>
       </div>
-      <p class="req">macOS 14+ · Apple Silicon · Node.js 18+ · Xcode Command Line Tools · builds from source, no binaries shipped</p>
+      <p class="meta"><span>v0.3.0</span><span>macOS 14+</span><span>Apple Silicon</span><span>builds from source</span><span>MIT</span></p>
     </div>
-  </header>
-
-  <div class="demo">
-    <img src="island-demo.gif" alt="The island under the MacBook notch expands with 'Claude requests to run pytest', Always allow is clicked, and it settles into the session overview.">
-    <p class="cap">Real capture — a request arrives, one click on <b>Always allow</b>, back to work.</p>
   </div>
+</header>
 
-  <section>
+<div class="demo">
+  <div class="wrap">
+    <div class="frame">
+      <img src="island-demo.gif" alt="The island under the MacBook notch expands with a permission request, it gets approved, and the island collapses back.">
+    </div>
+    <p class="cap">A request arrives, one click, back to work — rendered from the real UI components.</p>
+  </div>
+</div>
+
+<div class="agents wrap" id="agents">
+  <div class="chip"><span class="on"></span> Claude Code — supported today</div>
+  <div class="chip"><span class="soon"></span> Codex CLI — planned</div>
+  <div class="chip"><span class="soon"></span> Gemini CLI — planned</div>
+  <div class="chip"><span class="soon"></span> Your agent — <a href="https://github.com/PShato0x/claude-widget" style="color:var(--accent)">open protocol</a></div>
+</div>
+
+<section id="features">
+  <div class="wrap">
+    <p class="kicker">Features</p>
     <h2>Why you'll leave it running</h2>
-    <div class="features">
-      <div class="card">
-        <h3><span class="dot">●</span> Approve from the notch</h3>
-        <p>When Claude wants to run a command or edit a file, the island expands with <b>Always allow / Allow once / Deny</b>. Clicking never steals focus from your work.</p>
-      </div>
-      <div class="card">
-        <h3><span class="dot">●</span> Rules that learn</h3>
-        <p><i>Always allow</i> saves a rule like <code>Bash:npm</code> — matching requests auto-approve from then on. Rules live in a plain JSON file you control.</p>
-      </div>
-      <div class="card">
-        <h3><span class="dot">●</span> Live session status</h3>
-        <p>A quiet dot pulses terracotta while Claude works, turns orange when it needs you. Hover to peek at every session and its last prompt.</p>
-      </div>
-      <div class="card">
-        <h3><span class="dot">●</span> Fails open, fails safe</h3>
-        <p>Relay down? Didn't answer in time? Claude Code falls back to its normal terminal prompt. Nothing is ever approved without you.</p>
-      </div>
-      <div class="card">
-        <h3><span class="dot">●</span> Zero-dependency core</h3>
-        <p>The relay is a single-file Node server; the island is native SwiftUI built by plain <code>swiftc</code>. No Electron, no frameworks, ~400&nbsp;KB.</p>
-      </div>
-      <div class="card">
-        <h3><span class="dot">●</span> Stays fresh</h3>
-        <p>The island tells you when a new version ships. <code>claude-widget update</code> pulls, rebuilds, and restarts everything.</p>
-      </div>
+    <p class="lede">A quiet, native companion for agentic coding — built to be glanced at, not stared at.</p>
+    <div class="grid">
+      <div class="card"><div class="ico">✦</div><h3>Approve from the notch</h3>
+        <p>When your agent wants to run a command or edit a file, the island expands with <b>Always allow / Allow once / Deny</b>. Clicking never steals focus.</p></div>
+      <div class="card"><div class="ico">▣</div><h3>Rules that learn</h3>
+        <p><i>Always allow</i> saves a rule like <code>Bash:npm</code> — matching requests auto-approve from then on. Plain JSON you control.</p></div>
+      <div class="card"><div class="ico">●</div><h3>Live session status</h3>
+        <p>A dot pulses while the agent works and turns orange when it needs you. Hover to peek at every session and its last prompt.</p></div>
+      <div class="card"><div class="ico">⛨</div><h3>Fails open, fails safe</h3>
+        <p>Relay down? No answer in time? Your agent falls back to its normal terminal prompt. Nothing is ever approved without you.</p></div>
+      <div class="card"><div class="ico">⌁</div><h3>Zero-dependency core</h3>
+        <p>A single-file Node relay and a native SwiftUI island built by plain <code>swiftc</code>. No Electron. ~400&nbsp;KB.</p></div>
+      <div class="card"><div class="ico">↑</div><h3>Stays fresh</h3>
+        <p>The island tells you when a new version ships. <code>claude-widget update</code> pulls, rebuilds, and restarts everything.</p></div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section>
-    <h2>How it works</h2>
-    <div class="how">
-      <ol>
-        <li><b>Claude Code hooks</b> forward permission requests and status events to a local relay — the gate hook <i>waits</i> for your decision.</li>
-        <li>The <b>relay</b> (Node, localhost:8787, bearer-token auth) holds session state, pending requests, and your always-allow rules.</li>
-        <li>The <b>island</b> polls it every 1.5&nbsp;s and expands the moment something needs you. An experimental iOS widget speaks the same protocol.</li>
-      </ol>
+<section id="how">
+  <div class="wrap">
+    <p class="kicker">How it works</p>
+    <h2>Three small parts, no magic</h2>
+    <p class="lede">Everything runs locally on your Mac. The only network traffic is localhost, protected by a bearer token.</p>
+    <div class="steps">
+      <div class="step"><div class="n">01</div><h3>Hooks</h3>
+        <p>Your agent's lifecycle hooks forward permission requests and status events. The gate hook <i>waits</i> for your decision.</p></div>
+      <div class="step"><div class="n">02</div><h3>Relay</h3>
+        <p>A local server holds session state, pending requests, and your always-allow rules — one JSON endpoint any client can speak.</p></div>
+      <div class="step"><div class="n">03</div><h3>Island</h3>
+        <p>The notch app polls every 1.5s and expands the moment something needs you. An experimental iOS widget speaks the same protocol.</p></div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section>
-    <h2>At a glance</h2>
+<section>
+  <div class="wrap">
+    <p class="kicker">At a glance</p>
+    <h2>Made to disappear</h2>
     <div class="shots">
-      <img src="island-request.png" width="420" alt="Expanded island with a permission request and three action buttons">
+      <img src="island-request.png" width="430" alt="Expanded island with a permission request and three action buttons">
       <img src="island-status.png" width="340" alt="Island on hover showing a working session">
     </div>
-  </section>
+  </div>
+</section>
 
-  <footer>
-    <span>MIT licensed · <a href="https://github.com/PShato0x/claude-widget">Source on GitHub</a></span>
-    <span>🤖 Built with <a href="https://claude.com/claude-code">Claude Code</a></span>
-  </footer>
-
+<div class="wrap">
+  <div class="cta">
+    <h2>Stop babysitting the terminal.</h2>
+    <p>One command. Thirty seconds. Everything builds from source on your machine.</p>
+    <a class="btn" href="#install">Install Claude Widget</a>
+  </div>
 </div>
+
+<footer>
+  <div class="wrap foot">
+    <div>
+      <a class="brand" href="#"><span class="spark">✦</span> Claude Widget</a>
+      <p class="blurb">Open-source status island for AI coding agents. MIT licensed, built in the open.</p>
+    </div>
+    <div>
+      <h4>Project</h4>
+      <a href="https://github.com/PShato0x/claude-widget">GitHub</a>
+      <a href="https://github.com/PShato0x/claude-widget#install-macos-one-line">Install guide</a>
+      <a href="https://github.com/PShato0x/claude-widget/blob/main/get.sh">Read get.sh</a>
+    </div>
+    <div>
+      <h4>Resources</h4>
+      <a href="https://github.com/PShato0x/claude-widget#how-it-works">Architecture</a>
+      <a href="https://github.com/PShato0x/claude-widget#security-notes">Security notes</a>
+      <a href="https://github.com/PShato0x/claude-widget/blob/main/LICENSE">License</a>
+    </div>
+    <div>
+      <h4>Community</h4>
+      <a href="https://github.com/PShato0x/claude-widget/issues">Issues</a>
+      <a href="https://github.com/PShato0x/claude-widget/pulls">Pull requests</a>
+      <a href="https://claude.com/claude-code">Built with Claude Code</a>
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>

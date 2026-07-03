@@ -1,13 +1,14 @@
 import SwiftUI
 
-/// Dark-island palette with the terracotta/cream accents from the mockups.
+/// Brand-neutral dark palette: near-black glass, zinc text, one violet accent.
+/// (Semantic colors — orange for "needs you", green for idle — stay semantic.)
 enum Island {
-    static let black = Color(red: 0.05, green: 0.045, blue: 0.04)
-    static let paper = Color(red: 0.980, green: 0.973, blue: 0.957)
-    static let paperSoft = Color(red: 0.980, green: 0.973, blue: 0.957).opacity(0.55)
-    static let terracotta = Color(red: 0.773, green: 0.443, blue: 0.310)
-    static let slate = Color(red: 0.22, green: 0.21, blue: 0.20)   // "Allow once"
-    static let stone = Color(red: 0.35, green: 0.34, blue: 0.32)   // "Deny"
+    static let black = Color(red: 0.043, green: 0.043, blue: 0.051)
+    static let paper = Color(red: 0.957, green: 0.957, blue: 0.965)
+    static let paperSoft = Color(red: 0.957, green: 0.957, blue: 0.965).opacity(0.55)
+    static let accent = Color(red: 0.545, green: 0.486, blue: 0.965)  // #8B7CF6
+    static let slate = Color(red: 0.20, green: 0.20, blue: 0.23)   // "Allow once"
+    static let stone = Color(red: 0.33, green: 0.33, blue: 0.37)   // "Deny"
 
     static let expandedWidth: CGFloat = 460
     static let expandedBodyHeight: CGFloat = 132
@@ -21,7 +22,7 @@ struct IslandToggle: View {
     var body: some View {
         Button { isOn.toggle() } label: {
             Capsule()
-                .fill(isOn ? Island.terracotta : Island.stone.opacity(0.5))
+                .fill(isOn ? Island.accent : Island.stone.opacity(0.5))
                 .frame(width: 30, height: 17)
                 .overlay(alignment: isOn ? .trailing : .leading) {
                     Circle().fill(Island.paper).frame(width: 13, height: 13).padding(2)
@@ -38,7 +39,7 @@ struct IslandButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 12, design: .serif).weight(.semibold))
+            .font(.system(size: 12).weight(.semibold))
             .frame(maxWidth: .infinity)
             .padding(.vertical, 7)
             .background(background, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
@@ -85,9 +86,9 @@ struct IslandView: View {
     /// behind the notch itself); indicators live on the wings.
     private var collapsedBar: some View {
         HStack {
-            Image(systemName: "asterisk")
+            Image(systemName: "sparkle")
                 .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(Island.terracotta)
+                .foregroundStyle(Island.accent)
                 .padding(.leading, 16)
             Spacer()
             StatusDot(state: model.aggregateState)
@@ -120,18 +121,18 @@ struct IslandView: View {
             Image(systemName: "chevron.left.forwardslash.chevron.right")
                 .font(.system(size: 10, weight: .semibold))
             Text("Code")
-                .font(.system(size: 12, design: .serif).weight(.semibold))
+                .font(.system(size: 12).weight(.semibold))
             Spacer()
             if model.snapshot.updateAvailable == true {
                 Text("↑ Update available")
-                    .font(.system(size: 10, design: .serif).weight(.semibold))
-                    .foregroundStyle(Island.terracotta)
+                    .font(.system(size: 10).weight(.semibold))
+                    .foregroundStyle(Island.accent)
                     .help("Run: claude-widget update")
                     .padding(.trailing, 4)
             }
             HStack(spacing: 6) {
                 Text("Remote approvals")
-                    .font(.system(size: 10, design: .serif))
+                    .font(.system(size: 10))
                 IslandToggle(isOn: Binding(
                     get: { model.snapshot.remoteMode },
                     set: { model.setRemoteMode($0) }
@@ -145,17 +146,17 @@ struct IslandView: View {
         VStack(alignment: .leading, spacing: 8) {
             VStack(alignment: .leading, spacing: 1) {
                 Text("Running session · \(request.project)")
-                    .font(.system(size: 10, design: .serif))
+                    .font(.system(size: 10))
                     .foregroundStyle(Island.paperSoft)
-                Text("Claude requests to \(request.summary)")
-                    .font(.system(size: 15, design: .serif).weight(.bold))
+                Text("Requests to \(request.summary)")
+                    .font(.system(size: 15).weight(.bold))
                     .foregroundStyle(Island.paper)
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
             }
             HStack(spacing: 8) {
                 Button("Always allow") { model.respond(request, decision: "always") }
-                    .buttonStyle(IslandButtonStyle(background: Island.terracotta))
+                    .buttonStyle(IslandButtonStyle(background: Island.accent))
                 Button("Allow once") { model.respond(request, decision: "once") }
                     .buttonStyle(IslandButtonStyle(background: Island.slate))
                 Button("Deny") { model.respond(request, decision: "deny") }
@@ -164,7 +165,7 @@ struct IslandView: View {
             .buttonStyle(.plain)
             if extra > 0 {
                 Text("+\(extra) more waiting")
-                    .font(.system(size: 10, design: .serif))
+                    .font(.system(size: 10))
                     .foregroundStyle(Island.paperSoft)
             }
         }
@@ -175,32 +176,32 @@ struct IslandView: View {
             let live = Array(model.snapshot.liveSessions.prefix(2))
             if live.isEmpty {
                 Text("No active sessions")
-                    .font(.system(size: 14, design: .serif).weight(.semibold))
+                    .font(.system(size: 14).weight(.semibold))
                     .foregroundStyle(Island.paperSoft)
                 Text("Start Claude Code in a terminal — sessions appear here.")
-                    .font(.system(size: 11, design: .serif))
+                    .font(.system(size: 11))
                     .foregroundStyle(Island.paperSoft)
             } else {
                 ForEach(live) { session in
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(spacing: 6) {
                             Circle()
-                                .fill(session.state == "working" ? Island.terracotta : Island.paperSoft)
+                                .fill(session.state == "working" ? Island.accent : Island.paperSoft)
                                 .frame(width: 6, height: 6)
                             Text(session.title)
-                                .font(.system(size: 13, design: .serif).weight(.bold))
+                                .font(.system(size: 13).weight(.bold))
                                 .foregroundStyle(Island.paper)
                                 .lineLimit(1)
                             Spacer()
                             Text(session.state == "working" && !session.currentTool.isEmpty
                                  ? "\(session.stateLabel) · \(session.currentTool)"
                                  : session.stateLabel)
-                                .font(.system(size: 10, design: .serif))
+                                .font(.system(size: 10))
                                 .foregroundStyle(Island.paperSoft)
                         }
                         if !session.lastPrompt.isEmpty {
                             Text(session.lastPrompt)
-                                .font(.system(size: 11, design: .serif))
+                                .font(.system(size: 11))
                                 .foregroundStyle(Island.paperSoft)
                                 .lineLimit(1)
                                 .padding(.leading, 12)
@@ -214,10 +215,10 @@ struct IslandView: View {
     private var offlineSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Relay offline")
-                .font(.system(size: 14, design: .serif).weight(.semibold))
+                .font(.system(size: 14).weight(.semibold))
                 .foregroundStyle(Island.paper)
             Text("Run `node server/server.js` (and install.sh once) to connect.")
-                .font(.system(size: 11, design: .serif))
+                .font(.system(size: 11))
                 .foregroundStyle(Island.paperSoft)
         }
     }
@@ -252,7 +253,7 @@ struct StatusDot: View {
         case .offline: return .gray.opacity(0.5)
         case .empty: return Island.paperSoft.opacity(0.4)
         case .idle: return .green.opacity(0.7)
-        case .working: return Island.terracotta
+        case .working: return Island.accent
         case .pending: return .orange
         }
     }

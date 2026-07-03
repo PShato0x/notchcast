@@ -49,7 +49,7 @@ fi
 if [[ "${1:-}" == "--readme-assets" ]]; then
   DOCS="$(cd "$DIR/.." && pwd)/docs"
   mkdir -p "$DOCS"
-  TMP_BIN="$(mktemp -d)/render-assets"
+  TMP="$(mktemp -d)"
   echo "Compiling asset renderer…"
   swiftc -O -parse-as-library \
     "${EXTRA_FLAGS[@]}" \
@@ -57,8 +57,12 @@ if [[ "${1:-}" == "--readme-assets" ]]; then
     "$DIR/Sources/ClaudeIsland/StatusModel.swift" \
     "$DIR/Sources/ClaudeIsland/RelayClient.swift" \
     "$DIR/Scripts/RenderReadmeAssets.swift" \
-    -o "$TMP_BIN"
-  "$TMP_BIN" "$DOCS"
+    -o "$TMP/render-assets"
+  "$TMP/render-assets" "$DOCS"
+  echo "Assembling demo GIF…"
+  swiftc -O -parse-as-library "${EXTRA_FLAGS[@]}" "$DIR/Scripts/MakeGif.swift" -o "$TMP/makegif"
+  GIF_DELAY=0.15 "$TMP/makegif" "$DOCS/island-demo.gif" "$DOCS"/gif-frames/f*.png
+  rm -rf "$DOCS/gif-frames"
   exit 0
 fi
 

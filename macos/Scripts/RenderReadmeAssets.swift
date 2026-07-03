@@ -49,6 +49,86 @@ enum RenderReadmeAssets {
             connected: true
         )
         render(model: collapsedModel, to: "\(outDir)/island-collapsed.png")
+
+        renderGifFrames(outDir: outDir, session: session, request: request, now: now)
+    }
+
+    /// Renders the README demo animation as numbered frames (assembled into a
+    /// GIF by build.sh). Synthetic on purpose: no screen capture, nothing from
+    /// the maintainer's desktop, and it always matches the current theme.
+    @MainActor
+    static func renderGifFrames(outDir: String, session: SessionStatus, request: PendingRequest, now: Double) {
+        let framesDir = "\(outDir)/gif-frames"
+        try? FileManager.default.removeItem(atPath: framesDir)
+        try! FileManager.default.createDirectory(atPath: framesDir, withIntermediateDirectories: true)
+
+        let idle = StatusModel()
+        idle.apply(
+            snapshot: StatusSnapshot(remoteMode: true, serverTime: now,
+                                     sessions: [session], pending: [], rules: []),
+            connected: true
+        )
+
+        let asking = StatusModel()
+        asking.apply(
+            snapshot: StatusSnapshot(remoteMode: true, serverTime: now,
+                                     sessions: [session], pending: [request], rules: []),
+            connected: true
+        )
+
+        // Post-approval: expanded session overview (as if still hovered).
+        let after = StatusModel()
+        after.apply(
+            snapshot: StatusSnapshot(remoteMode: true, serverTime: now,
+                                     sessions: [session], pending: [], rules: []),
+            connected: true
+        )
+        after.hovering = true
+
+        var index = 0
+        func emit(_ model: StatusModel, maskHeight: CGFloat? = nil, times: Int = 1) {
+            let island = IslandView(model: model)
+                .frame(width: 560, height: 230, alignment: .top)
+                .mask(alignment: .top) {
+                    UnevenRoundedRectangle(
+                        cornerRadii: .init(bottomLeading: 22, bottomTrailing: 22),
+                        style: .continuous
+                    )
+                    .frame(width: 560, height: maskHeight ?? 230)
+                    .frame(maxHeight: .infinity, alignment: .top)
+                }
+            let composed = ZStack(alignment: .top) {
+                LinearGradient(
+                    colors: [Color(red: 0.235, green: 0.235, blue: 0.295),
+                             Color(red: 0.095, green: 0.095, blue: 0.125)],
+                    startPoint: .top, endPoint: .bottom
+                )
+                island
+            }
+            .frame(width: 560, height: 230)
+
+            let renderer = ImageRenderer(content: composed)
+            renderer.scale = 1
+            renderer.isOpaque = true
+            guard
+                let image = renderer.nsImage,
+                let tiff = image.tiffRepresentation,
+                let rep = NSBitmapImageRep(data: tiff),
+                let png = rep.representation(using: .png, properties: [:])
+            else { fputs("failed gif frame \(index)\n", stderr); exit(1) }
+            for _ in 0..<times {
+                index += 1
+                try? png.write(to: URL(fileURLWithPath: String(format: "%@/f%03d.png", framesDir, index)))
+            }
+        }
+
+        emit(idle, times: 7)                                   // collapsed, agent working
+        for h in [70, 120, 160, 195] { emit(asking, maskHeight: CGFloat(h)) }  // island grows
+        emit(asking, times: 15)                                // request card holds
+        emit(after, times: 8)                                  // approved -> session overview
+        for h in [150, 90] { emit(after, maskHeight: CGFloat(h)) }             // shrink away
+        emit(idle, times: 7)                                   // back to collapsed
+        print("wrote \(index) gif frames to \(framesDir)")
     }
 
     @MainActor
