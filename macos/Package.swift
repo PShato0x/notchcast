@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "ClaudeIsland",
+    name: "NotchAI",
     platforms: [.macOS(.v14)],
     targets: [
         .executableTarget(
-            name: "ClaudeIsland",
-            path: "Sources/ClaudeIsland"
+            name: "NotchAI",
+            path: "Sources/NotchAI"
         )
     ]
 )

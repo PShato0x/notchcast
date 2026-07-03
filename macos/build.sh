@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Build ClaudeIsland.app with plain swiftc — works with just the Xcode
+# Build NotchAI.app with plain swiftc — works with just the Xcode
 # Command Line Tools, no Xcode.app or SwiftPM required.
-#   ./build.sh                  release build -> macos/ClaudeIsland.app
+#   ./build.sh                  release build -> macos/NotchAI.app
 #   ./build.sh --run            build then launch
 #   ./build.sh --readme-assets  render docs/island-*.png from the real views
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-APP="$DIR/ClaudeIsland.app"
-BIN="$APP/Contents/MacOS/ClaudeIsland"
+APP="$DIR/NotchAI.app"
+BIN="$APP/Contents/MacOS/NotchAI"
 
 # --- Workaround for a broken CLT install ---------------------------------
 # Some Command Line Tools upgrades leave a stale usr/include/swift/module.modulemap
@@ -53,9 +53,9 @@ if [[ "${1:-}" == "--readme-assets" ]]; then
   echo "Compiling asset renderer…"
   swiftc -O -parse-as-library \
     "${EXTRA_FLAGS[@]}" \
-    "$DIR/Sources/ClaudeIsland/IslandView.swift" \
-    "$DIR/Sources/ClaudeIsland/StatusModel.swift" \
-    "$DIR/Sources/ClaudeIsland/RelayClient.swift" \
+    "$DIR/Sources/NotchAI/IslandView.swift" \
+    "$DIR/Sources/NotchAI/StatusModel.swift" \
+    "$DIR/Sources/NotchAI/RelayClient.swift" \
     "$DIR/Scripts/RenderReadmeAssets.swift" \
     -o "$TMP/render-assets"
   "$TMP/render-assets" "$DOCS"
@@ -73,9 +73,9 @@ cat > "$APP/Contents/Info.plist" <<'EOF'
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleExecutable</key>          <string>ClaudeIsland</string>
-    <key>CFBundleIdentifier</key>          <string>dev.claudewidget.island</string>
-    <key>CFBundleName</key>                <string>Claude Island</string>
+    <key>CFBundleExecutable</key>          <string>NotchAI</string>
+    <key>CFBundleIdentifier</key>          <string>dev.notchai.app</string>
+    <key>CFBundleName</key>                <string>NotchAI</string>
     <key>CFBundlePackageType</key>         <string>APPL</string>
     <key>CFBundleShortVersionString</key>  <string>0.1.0</string>
     <key>LSMinimumSystemVersion</key>      <string>14.0</string>
@@ -87,7 +87,7 @@ EOF
 echo "Compiling…"
 swiftc -O -parse-as-library \
   "${EXTRA_FLAGS[@]}" \
-  "$DIR/Sources/ClaudeIsland/"*.swift \
+  "$DIR/Sources/NotchAI/"*.swift \
   -o "$BIN"
 
 codesign --force --sign - "$APP" 2>/dev/null || true

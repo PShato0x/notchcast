@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct ClaudeWidgetApp: App {
+struct NotchAIApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

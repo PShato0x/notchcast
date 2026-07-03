@@ -127,7 +127,7 @@ struct IslandView: View {
                 Text("↑ Update available")
                     .font(.system(size: 10).weight(.semibold))
                     .foregroundStyle(Island.accent)
-                    .help("Run: claude-widget update")
+                    .help("Run: notchai update")
                     .padding(.trailing, 4)
             }
             HStack(spacing: 6) {

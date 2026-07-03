@@ -118,7 +118,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusItem.button?.image = NSImage(
             systemSymbolName: "sparkle",
-            accessibilityDescription: "Claude Island"
+            accessibilityDescription: "NotchAI"
         )
 
         let menu = NSMenu()
@@ -131,7 +131,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         remoteItem.target = self
         menu.addItem(remoteItem)
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: "Quit Claude Island", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: "Quit NotchAI", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         statusItem.menu = menu
 
         // Keep the menu's status line and checkmark current.
@@ -149,7 +149,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     statusLine.title = "\(live.count) session(s) · \(working) working"
                 }
                 if snapshot.updateAvailable == true {
-                    statusLine.title += " · update available (claude-widget update)"
+                    statusLine.title += " · update available (notchai update)"
                 }
                 remoteItem.state = snapshot.remoteMode ? .on : .off
             }
@@ -162,7 +162,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 @main
-enum ClaudeIslandMain {
+enum NotchAIMain {
     @MainActor
     static func main() {
         let app = NSApplication.shared

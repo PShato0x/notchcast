@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Idempotently merges the Claude Widget hooks into ~/.claude/settings.json.
+// Idempotently merges the NotchAI hooks into ~/.claude/settings.json.
 // Existing settings and hooks are preserved; a .bak backup is written before
 // any change. Safe to run repeatedly (e.g. on every update).
 
@@ -8,8 +8,8 @@ import os from 'node:os';
 import path from 'node:path';
 
 const SETTINGS_PATH = path.join(os.homedir(), '.claude', 'settings.json');
-const GATE_CMD = 'node "$HOME/.claude-widget/hooks/permission-gate.mjs"';
-const REPORT_CMD = 'node "$HOME/.claude-widget/hooks/status-report.mjs"';
+const GATE_CMD = 'node "$HOME/.notchai/hooks/permission-gate.mjs"';
+const REPORT_CMD = 'node "$HOME/.notchai/hooks/status-report.mjs"';
 
 let settings = {};
 try {
@@ -26,6 +26,18 @@ function hasCommand(entries, needle) {
 }
 
 let changed = false;
+
+// Migrate hook commands from pre-rename installs (~/.claude-widget -> ~/.notchai).
+for (const entries of Object.values(settings.hooks)) {
+  for (const entry of entries || []) {
+    for (const h of entry.hooks || []) {
+      if (typeof h.command === 'string' && h.command.includes('.claude-widget/')) {
+        h.command = h.command.replaceAll('.claude-widget/', '.notchai/');
+        changed = true;
+      }
+    }
+  }
+}
 
 if (!hasCommand(settings.hooks.PreToolUse, 'permission-gate.mjs')) {
   settings.hooks.PreToolUse ||= [];
@@ -50,7 +62,7 @@ if (changed) {
   fs.mkdirSync(path.dirname(SETTINGS_PATH), { recursive: true });
   if (fs.existsSync(SETTINGS_PATH)) fs.copyFileSync(SETTINGS_PATH, SETTINGS_PATH + '.bak');
   fs.writeFileSync(SETTINGS_PATH, JSON.stringify(settings, null, 2) + '\n');
-  console.log(`Merged Claude Widget hooks into ${SETTINGS_PATH} (backup: settings.json.bak)`);
+  console.log(`Merged NotchAI hooks into ${SETTINGS_PATH} (backup: settings.json.bak)`);
 } else {
-  console.log('Claude Widget hooks already present — settings unchanged.');
+  console.log('NotchAI hooks already present — settings unchanged.');
 }

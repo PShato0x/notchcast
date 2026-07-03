@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Fire-and-forget status hook: posts every hook event to the Claude Widget
+// Fire-and-forget status hook: posts every hook event to the NotchAI
 // relay so the iOS widget can show what the session is doing.
 // Never blocks or fails the session — always exits 0 quickly.
 
@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-const CONFIG_PATH = path.join(os.homedir(), '.claude-widget', 'config.json');
+const CONFIG_PATH = path.join(os.homedir(), '.notchai', 'config.json');
 
 function loadConfig() {
   try { return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')); } catch { return {}; }

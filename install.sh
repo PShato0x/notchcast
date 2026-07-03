@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Claude Widget — Mac-side installer.
-# Creates ~/.claude-widget with a config (auth token) and the hook scripts,
+# NotchAI — Mac-side installer.
+# Creates ~/.notchai with a config (auth token) and the hook scripts,
 # then prints the hooks snippet for ~/.claude/settings.json.
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CW_DIR="$HOME/.claude-widget"
+CW_DIR="$HOME/.notchai"
 CONFIG="$CW_DIR/config.json"
 
 command -v node >/dev/null 2>&1 || { echo "Node.js 18+ is required (brew install node)"; exit 1; }

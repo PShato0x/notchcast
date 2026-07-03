@@ -1,4 +1,4 @@
-# Claude Widget
+# NotchAI
 
 Open-source status widgets for [Claude Code](https://claude.com/claude-code). See what Claude is working on and approve permission requests without staring at the terminal — from a **dynamic island on your Mac's notch** (flagship) or an experimental **iOS home-screen widget**.
 
@@ -7,10 +7,10 @@ Open-source status widgets for [Claude Code](https://claude.com/claude-code). Se
 </p>
 <p align="center"><sub>A permission request arrives, <b>Always allow</b> is clicked, the island settles into the session overview. All README visuals are rendered from the real SwiftUI views — regenerate with <code>macos/build.sh --readme-assets</code>.</sub></p>
 <p align="center">
-  <img src="docs/island-request.png" width="508" alt="Claude Island expanded under the MacBook notch: “Claude requests to run `npm test`” with Always allow / Allow once / Deny buttons">
+  <img src="docs/island-request.png" width="508" alt="NotchAI expanded under the MacBook notch: “Claude requests to run `npm test`” with Always allow / Allow once / Deny buttons">
 </p>
 <p align="center">
-  <img src="docs/island-status.png" width="380" alt="Claude Island showing a working session on hover">
+  <img src="docs/island-status.png" width="380" alt="NotchAI showing a working session on hover">
   &nbsp;
   <img src="docs/island-collapsed.png" width="240" alt="Collapsed island: a slim strip hugging the notch with a status dot">
 </p>
@@ -19,21 +19,21 @@ Open-source status widgets for [Claude Code](https://claude.com/claude-code). Se
 ## Install (macOS, one line)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/PShato0x/claude-widget/main/get.sh | bash
+curl -fsSL https://raw.githubusercontent.com/PShato0x/notchai/main/get.sh | bash
 ```
 
-Needs macOS 14+ (Apple Silicon), Node.js 18+, and the Xcode Command Line Tools. Everything builds from source on your machine — no binaries are shipped. The installer is idempotent and doubles as the updater; afterwards you get a `claude-widget` CLI:
+Needs macOS 14+ (Apple Silicon), Node.js 18+, and the Xcode Command Line Tools. Everything builds from source on your machine — no binaries are shipped. The installer is idempotent and doubles as the updater; afterwards you get a `notchai` CLI:
 
 ```
-claude-widget status      # relay version, sessions, pending approvals
-claude-widget update      # pull latest, rebuild, restart (island shows "↑ Update available" when there is one)
-claude-widget restart     # bounce the relay + island
-claude-widget uninstall   # remove services and app
+notchai status      # relay version, sessions, pending approvals
+notchai update      # pull latest, rebuild, restart (island shows "↑ Update available" when there is one)
+notchai restart     # bounce the relay + island
+notchai uninstall   # remove services and app
 ```
 
-Prefer to read before piping to bash? Quite right: [get.sh](get.sh). Manual setup is documented below. **Website: [pshato0x.github.io/claude-widget](https://pshato0x.github.io/claude-widget/)**
+Prefer to read before piping to bash? Quite right: [get.sh](get.sh). Manual setup is documented below. **Website: [pshato0x.github.io/notchai](https://pshato0x.github.io/notchai/)**
 
-## ✦ Claude Island (macOS) — start here
+## ✦ NotchAI (macOS) — start here
 
 A tiny native app that lives around your MacBook's notch, like a dynamic island:
 
@@ -44,12 +44,12 @@ A tiny native app that lives around your MacBook's notch, like a dynamic island:
 - **Brand-neutral by design** — Claude Code is the first supported agent; the relay protocol and UI are agent-agnostic so other coding agents can plug in (see roadmap).
 
 ```bash
-./install.sh                    # once: creates ~/.claude-widget (token + hooks)
+./install.sh                    # once: creates ~/.notchai (token + hooks)
 node server/server.js &         # the relay; keep it running
 cd macos && ./build.sh --run    # build + launch the island (needs only Command Line Tools)
 ```
 
-Then merge [hooks/settings.example.json](hooks/settings.example.json) into `~/.claude/settings.json` and restart Claude Code. That's the whole setup — the island reads its config from `~/.claude-widget/config.json` automatically.
+Then merge [hooks/settings.example.json](hooks/settings.example.json) into `~/.claude/settings.json` and restart Claude Code. That's the whole setup — the island reads its config from `~/.notchai/config.json` automatically.
 
 > `build.sh` compiles with plain `swiftc` (no Xcode.app needed) and auto-works-around a common broken-CLT issue (stale duplicate `SwiftBridging` modulemap). A SwiftPM [Package.swift](macos/Package.swift) is also included if you prefer `swift build`.
 
@@ -72,13 +72,13 @@ Then merge [hooks/settings.example.json](hooks/settings.example.json) into `~/.c
 │  relay server (Node, :8787)           │ Tailscale  interactive buttons      │
 │   ▲                                   │      └──────────────────────────────┘
 │   │ localhost                         │
-│  ✦ Claude Island (notch app, macos/)  │
+│  ✦ NotchAI (notch app, macos/)  │
 └───────────────────────────────────────┘
 ```
 
 1. **Hooks** ([hooks/](hooks/)) — a `PreToolUse` hook forwards each permission-relevant tool call to the relay and *waits*; status hooks (`UserPromptSubmit`, `PostToolUse`, `Stop`, `Notification`, `SessionEnd`) report what the session is doing.
 2. **Relay** ([server/server.js](server/server.js)) — a zero-dependency Node server that holds session state and pending requests. A client answers `always | once | deny`; the hook returns Claude Code's `permissionDecision` accordingly.
-3. **Claude Island** ([macos/](macos/)) — native AppKit/SwiftUI notch panel polling the relay on localhost every 1.5 s, so requests appear near-instantly.
+3. **NotchAI** ([macos/](macos/)) — native AppKit/SwiftUI notch panel polling the relay on localhost every 1.5 s, so requests appear near-instantly.
 4. **iOS** ([ios/](ios/)) — SwiftUI app + WidgetKit extension. Widget buttons are App Intents that hit `/respond` directly. Experimental: it works, but home-screen widget refresh is throttled by iOS and building it requires an Apple developer setup — which is why the Mac island is the recommended client.
 
 ## iOS setup (experimental)
@@ -92,7 +92,7 @@ Then merge [hooks/settings.example.json](hooks/settings.example.json) into `~/.c
 ### 1. Mac side
 
 ```bash
-./install.sh                  # creates ~/.claude-widget (token + hook scripts)
+./install.sh                  # creates ~/.notchai (token + hook scripts)
 node server/server.js         # start the relay; keep it running
 ```
 
@@ -105,7 +105,7 @@ cd ios
 # Edit project.yml: set your bundleIdPrefix + team, and pick an App Group id.
 # Update the same App Group id in Shared/Models.swift (AppGroup.identifier).
 xcodegen generate
-open ClaudeWidget.xcodeproj
+open NotchAI.xcodeproj
 ```
 
 In Xcode: select your signing team for both targets, enable the App Group capability on both (Xcode creates it on your developer account), then build to your phone.
@@ -121,7 +121,7 @@ Start a Claude Code session, toggle **Remote approvals** on (in the app or widge
 - Every endpoint requires the bearer token created by `install.sh`. Treat it like a password.
 - Traffic is plain HTTP. Fine on a trusted LAN; for anything else, use **Tailscale** (encrypts end-to-end) rather than port-forwarding the relay to the internet. Never expose port 8787 publicly.
 - The permission gate **fails open to the terminal** — a dead relay never silently approves anything.
-- "Always allow" rules live in `~/.claude-widget/rules.json` on your Mac; clear them from the app or by deleting the file.
+- "Always allow" rules live in `~/.notchai/rules.json` on your Mac; clear them from the app or by deleting the file.
 
 ## Limitations (v1)
 

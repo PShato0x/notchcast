@@ -265,7 +265,7 @@ struct ClaudeStatusWidget: Widget {
 }
 
 @main
-struct ClaudeWidgetBundle: WidgetBundle {
+struct NotchAIBundle: WidgetBundle {
     var body: some Widget {
         ClaudeStatusWidget()
     }

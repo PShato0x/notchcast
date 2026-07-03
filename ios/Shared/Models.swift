@@ -3,7 +3,7 @@ import Foundation
 /// Change this to your own App Group identifier (must match the entitlements
 /// of BOTH the app and the widget extension).
 enum AppGroup {
-    static let identifier = "group.com.yourname.claudewidget"
+    static let identifier = "group.com.yourname.notchai"
     static var defaults: UserDefaults { UserDefaults(suiteName: identifier) ?? .standard }
 }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// PreToolUse hook: forwards the permission request to the Claude Widget relay
+// PreToolUse hook: forwards the permission request to the NotchAI relay
 // and waits for a decision from the iPhone.
 //
 // Output contract (Claude Code hooks):
@@ -14,7 +14,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-const CONFIG_PATH = path.join(os.homedir(), '.claude-widget', 'config.json');
+const CONFIG_PATH = path.join(os.homedir(), '.notchai', 'config.json');
 
 function loadConfig() {
   try { return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')); } catch { return {}; }
@@ -55,7 +55,7 @@ async function main() {
       hookSpecificOutput: {
         hookEventName: 'PreToolUse',
         permissionDecision: result.decision,
-        permissionDecisionReason: result.reason || 'Decided via Claude Widget',
+        permissionDecisionReason: result.reason || 'Decided via NotchAI',
       },
     }));
   }

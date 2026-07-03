@@ -7,7 +7,7 @@
 #   2. The App Group in App.entitlements, Widget.entitlements, and Shared/Models.swift
 #   3. DEVELOPMENT_TEAM to your Apple team ID (or set signing in Xcode)
 
-name: ClaudeWidget
+name: NotchAI
 options:
   bundleIdPrefix: com.yourname
   deploymentTarget:
@@ -19,7 +19,7 @@ settings:
     # DEVELOPMENT_TEAM: YOURTEAMID
 
 targets:
-  ClaudeWidget:
+  NotchAI:
     type: application
     platform: iOS
     sources:
@@ -28,18 +28,18 @@ targets:
     info:
       path: App/Info.plist
       properties:
-        CFBundleDisplayName: Claude Widget
+        CFBundleDisplayName: NotchAI
         UILaunchScreen: {}
         CFBundleURLTypes:
-          - CFBundleURLSchemes: [claudewidget]
+          - CFBundleURLSchemes: [notchai]
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
-        NSLocalNetworkUsageDescription: Connects to the Claude Widget relay running on your Mac.
+        NSLocalNetworkUsageDescription: Connects to the NotchAI relay running on your Mac.
     entitlements:
       path: App/App.entitlements
       properties:
         com.apple.security.application-groups:
-          - group.com.yourname.claudewidget
+          - group.com.yourname.notchai
     dependencies:
       - target: ClaudeStatusWidgetExtension
         embed: true
@@ -62,7 +62,7 @@ targets:
       path: Widget/Widget.entitlements
       properties:
         com.apple.security.application-groups:
-          - group.com.yourname.claudewidget
+          - group.com.yourname.notchai
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.yourname.ClaudeWidget.widget
+        PRODUCT_BUNDLE_IDENTIFIER: com.yourname.NotchAI.widget
