@@ -86,26 +86,47 @@ enum RenderReadmeAssets {
         after.hovering = true
 
         var index = 0
+        let canvasW: CGFloat = 560, canvasH: CGFloat = 195
         func emit(_ model: StatusModel, maskHeight: CGFloat? = nil, times: Int = 1) {
             let island = IslandView(model: model)
-                .frame(width: 560, height: 230, alignment: .top)
+                .frame(width: canvasW, height: canvasH, alignment: .top)
                 .mask(alignment: .top) {
                     UnevenRoundedRectangle(
                         cornerRadii: .init(bottomLeading: 22, bottomTrailing: 22),
                         style: .continuous
                     )
-                    .frame(width: 560, height: maskHeight ?? 230)
+                    .frame(width: canvasW, height: maskHeight ?? canvasH)
                     .frame(maxHeight: .infinity, alignment: .top)
                 }
+            // A believable Mac top-of-screen: wallpaper gradient + menu bar,
+            // so collapsed frames read as "the notch area", not an empty box.
             let composed = ZStack(alignment: .top) {
                 LinearGradient(
-                    colors: [Color(red: 0.235, green: 0.235, blue: 0.295),
-                             Color(red: 0.095, green: 0.095, blue: 0.125)],
+                    colors: [Color(red: 0.245, green: 0.235, blue: 0.310),
+                             Color(red: 0.135, green: 0.125, blue: 0.180)],
                     startPoint: .top, endPoint: .bottom
                 )
+                VStack(spacing: 0) {
+                    HStack(spacing: 14) {
+                        Text("\u{F8FF}").font(.system(size: 12))
+                        Text("Finder").font(.system(size: 11, weight: .semibold))
+                        Text("File").font(.system(size: 11))
+                        Text("Edit").font(.system(size: 11))
+                        Text("View").font(.system(size: 11))
+                        Spacer()
+                        Image(systemName: "wifi").font(.system(size: 10))
+                        Image(systemName: "battery.75percent").font(.system(size: 11))
+                        Text("Fri 9:41 AM").font(.system(size: 11))
+                    }
+                    .foregroundStyle(.white.opacity(0.55))
+                    .padding(.horizontal, 14)
+                    .frame(height: model.barHeight)
+                    .background(.black.opacity(0.18))
+                    Spacer()
+                }
                 island
             }
-            .frame(width: 560, height: 230)
+            .frame(width: canvasW, height: canvasH)
 
             let renderer = ImageRenderer(content: composed)
             renderer.scale = 1
@@ -123,10 +144,10 @@ enum RenderReadmeAssets {
         }
 
         emit(idle, times: 7)                                   // collapsed, agent working
-        for h in [70, 120, 160, 195] { emit(asking, maskHeight: CGFloat(h)) }  // island grows
+        for h in [70, 115, 150, 175] { emit(asking, maskHeight: CGFloat(h)) }  // island grows
         emit(asking, times: 15)                                // request card holds
         emit(after, times: 8)                                  // approved -> session overview
-        for h in [150, 90] { emit(after, maskHeight: CGFloat(h)) }             // shrink away
+        for h in [140, 85] { emit(after, maskHeight: CGFloat(h)) }             // shrink away
         emit(idle, times: 7)                                   // back to collapsed
         print("wrote \(index) gif frames to \(framesDir)")
     }
