@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# Claude Widget CLI — manage the relay, island, and updates.
+set -euo pipefail
+
+CW_DIR="$HOME/.claude-widget"
+CFG="$CW_DIR/config.json"
+LABEL="dev.claudewidget.relay"
+PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+
+[[ -f "$CFG" ]] || { echo "Not installed — run the installer first (see https://github.com/PShato0x/claude-widget)"; exit 1; }
+
+cfg() { node -e "console.log(JSON.parse(require('fs').readFileSync('$CFG','utf8')).$1 ?? '')"; }
+SRC="$(cfg srcDir)"
+TOKEN="$(cfg token)"
+PORT="$(cfg port)"; PORT="${PORT:-8787}"
+[[ -d "$SRC" ]] || { echo "Source checkout missing ($SRC) — re-run the installer."; exit 1; }
+
+relaunch_island() {
+  pkill -x ClaudeIsland 2>/dev/null || true
+  sleep 0.5
+  open "$SRC/macos/ClaudeIsland.app"
+}
+
+case "${1:-help}" in
+  update)
+    echo "Current: v$(cat "$SRC/VERSION" 2>/dev/null || echo '?')"
+    # get.sh is idempotent: pulls, rebuilds, reinstalls services, relaunches.
+    exec bash "$SRC/get.sh"
+    ;;
+  status)
+    curl -sf -H "Authorization: Bearer $TOKEN" "http://127.0.0.1:$PORT/status" | node -e "
+let d=''; process.stdin.on('data',c=>d+=c).on('end',()=>{
+  const s = JSON.parse(d);
+  console.log('Claude Widget v' + (s.version || '?')
+    + (s.updateAvailable ? '  →  v' + s.latestVersion + ' available (claude-widget update)' : '  (up to date)'));
+  console.log('Remote approvals: ' + (s.remoteMode ? 'on' : 'off'));
+  const live = s.sessions.filter(x => x.state !== 'ended');
+  console.log('Sessions: ' + (live.length || 'none'));
+  for (const x of live) console.log('  • ' + x.title + ' — ' + x.state + (x.lastPrompt ? '  (' + x.lastPrompt.slice(0,60) + ')' : ''));
+  if (s.pending.length) {
+    console.log('Pending approvals:');
+    for (const p of s.pending) console.log('  ! ' + p.project + ': ' + p.summary);
+  }
+  console.log('Always-allow rules: ' + s.rules.length);
+});" || { echo "Relay not responding on port $PORT — try: claude-widget restart"; exit 1; }
+    ;;
+  restart)
+    launchctl kickstart -k "gui/$(id -u)/$LABEL" 2>/dev/null || {
+      launchctl bootstrap "gui/$(id -u)" "$PLIST" 2>/dev/null || true
+    }
+    relaunch_island
+    echo "Relay and island restarted."
+    ;;
+  logs)
+    exec tail -n "${2:-50}" -f "$CW_DIR/relay.log"
+    ;;
+  version)
+    cat "$SRC/VERSION" 2>/dev/null || echo dev
+    ;;
+  uninstall)
+    echo "Removing relay service, island, and CLI (keeps ~/.claude-widget config + your clone)…"
+    launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
+    rm -f "$PLIST"
+    pkill -x ClaudeIsland 2>/dev/null || true
+    osascript -e 'tell application "System Events" to delete (every login item whose name is "ClaudeIsland")' >/dev/null 2>&1 || true
+    rm -f "$HOME/.local/bin/claude-widget"
+    echo "Done. To remove the hooks, delete the claude-widget entries from ~/.claude/settings.json."
+    echo "To remove everything: rm -rf ~/.claude-widget"
+    ;;
+  help|*)
+    cat <<'EOF'
+claude-widget — Claude Code status on your Mac's notch
+  status      relay version, sessions, pending approvals
+  update      pull the latest version, rebuild, restart
+  restart     restart the relay service and the island app
+  logs [n]    tail the relay log
+  version     print installed version
+  uninstall   remove services and app (keeps config)
+EOF
+    ;;
+esac

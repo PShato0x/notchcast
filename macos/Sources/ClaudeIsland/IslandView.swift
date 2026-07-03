@@ -122,6 +122,13 @@ struct IslandView: View {
             Text("Code")
                 .font(.system(size: 12, design: .serif).weight(.semibold))
             Spacer()
+            if model.snapshot.updateAvailable == true {
+                Text("↑ Update available")
+                    .font(.system(size: 10, design: .serif).weight(.semibold))
+                    .foregroundStyle(Island.terracotta)
+                    .help("Run: claude-widget update")
+                    .padding(.trailing, 4)
+            }
             HStack(spacing: 6) {
                 Text("Remote approvals")
                     .font(.system(size: 10, design: .serif))

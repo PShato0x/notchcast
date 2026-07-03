@@ -41,6 +41,9 @@ struct StatusSnapshot: Codable {
     var sessions: [SessionStatus]
     var pending: [PendingRequest]
     var rules: [String]
+    var version: String?
+    var latestVersion: String?
+    var updateAvailable: Bool?
 
     static let empty = StatusSnapshot(remoteMode: false, serverTime: 0, sessions: [], pending: [], rules: [])
 

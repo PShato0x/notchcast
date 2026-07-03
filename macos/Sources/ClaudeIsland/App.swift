@@ -148,6 +148,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     let working = live.filter { $0.state == "working" }.count
                     statusLine.title = "\(live.count) session(s) · \(working) working"
                 }
+                if snapshot.updateAvailable == true {
+                    statusLine.title += " · update available (claude-widget update)"
+                }
                 remoteItem.state = snapshot.remoteMode ? .on : .off
             }
             .store(in: &cancellables)

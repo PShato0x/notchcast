@@ -16,6 +16,23 @@ Open-source status widgets for [Claude Code](https://claude.com/claude-code). Se
 </p>
 <p align="center"><sub>Rendered from the real SwiftUI views — regenerate anytime with <code>macos/build.sh --readme-assets</code>.</sub></p>
 
+## Install (macOS, one line)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/PShato0x/claude-widget/main/get.sh | bash
+```
+
+Needs macOS 14+ (Apple Silicon), Node.js 18+, and the Xcode Command Line Tools. Everything builds from source on your machine — no binaries are shipped. The installer is idempotent and doubles as the updater; afterwards you get a `claude-widget` CLI:
+
+```
+claude-widget status      # relay version, sessions, pending approvals
+claude-widget update      # pull latest, rebuild, restart (island shows "↑ Update available" when there is one)
+claude-widget restart     # bounce the relay + island
+claude-widget uninstall   # remove services and app
+```
+
+Prefer to read before piping to bash? Quite right: [get.sh](get.sh). Manual setup is documented below. **Website: [pshato0x.github.io/claude-widget](https://pshato0x.github.io/claude-widget/)**
+
 ## ✳ Claude Island (macOS) — start here
 
 A tiny native app that lives around your MacBook's notch, like a dynamic island:

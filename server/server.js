@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const CONFIG_DIR = path.join(os.homedir(), '.claude-widget');
 const CONFIG_PATH = path.join(CONFIG_DIR, 'config.json');
@@ -37,6 +38,41 @@ if (!TOKEN) {
 
 let remoteMode = fileConfig.remoteMode ?? true;
 let rules = loadJSON(RULES_PATH, []); // array of signature strings, e.g. "Bash:npm"
+
+// ---------- update check ----------
+
+const SRC_DIR = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const VERSION_URL = process.env.CW_VERSION_URL
+  || fileConfig.versionUrl
+  || 'https://raw.githubusercontent.com/PShato0x/claude-widget/main/VERSION';
+const CURRENT_VERSION = (() => {
+  try { return fs.readFileSync(path.join(SRC_DIR, 'VERSION'), 'utf8').trim(); } catch { return '0.0.0'; }
+})();
+
+let latestVersion = null;
+let lastUpdateCheck = 0;
+
+function versionGt(a, b) {
+  const pa = String(a).split('.').map(Number);
+  const pb = String(b).split('.').map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d) return d > 0;
+  }
+  return false;
+}
+
+function checkForUpdate() {
+  if (Date.now() - lastUpdateCheck < 6 * 60 * 60 * 1000) return; // every 6h
+  lastUpdateCheck = Date.now();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+  fetch(VERSION_URL, { signal: controller.signal })
+    .then((r) => (r.ok ? r.text() : null))
+    .then((text) => { if (text) latestVersion = text.trim(); })
+    .catch(() => {})
+    .finally(() => clearTimeout(timer));
+}
 
 const sessions = new Map(); // sessionId -> {id, title, cwd, state, lastPrompt, currentTool, message, updatedAt}
 const pending = new Map();  // requestId -> {info, resolve, timer}
@@ -98,6 +134,7 @@ function pruneSessions() {
 
 function snapshot() {
   pruneSessions();
+  checkForUpdate(); // async, throttled; result lands in a later snapshot
   return {
     remoteMode,
     serverTime: Date.now(),
@@ -106,6 +143,9 @@ function snapshot() {
       .map((p) => p.info)
       .sort((a, b) => a.createdAt - b.createdAt),
     rules,
+    version: CURRENT_VERSION,
+    latestVersion,
+    updateAvailable: latestVersion ? versionGt(latestVersion, CURRENT_VERSION) : false,
   };
 }
 

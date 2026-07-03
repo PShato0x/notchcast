@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Widget — Claude Code status on your Mac's notch</title>
+<meta name="description" content="An open-source dynamic island for your MacBook notch: see what Claude Code is working on and approve permission requests without touching the terminal.">
+<meta property="og:title" content="Claude Widget — Claude Code on your notch">
+<meta property="og:description" content="A dynamic island for your MacBook notch: live Claude Code session status and one-click permission approvals.">
+<meta property="og:image" content="https://pshato0x.github.io/claude-widget/island-request.png">
+<style>
+  :root {
+    --cream: #F4F1EA;
+    --cream-deep: #ECE8DE;
+    --ink: #2C2925;
+    --ink-soft: rgba(44, 41, 37, 0.6);
+    --terracotta: #C5714F;
+    --terracotta-deep: #B05F3F;
+    --island: #0D0C0A;
+    --paper: #FAF8F4;
+    --serif: "New York", "Iowan Old Style", Georgia, "Times New Roman", serif;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--cream); color: var(--ink); font-family: var(--serif); line-height: 1.6; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; }
+  .brand .star { color: var(--terracotta); font-size: 22px; line-height: 1; }
+  nav a { color: var(--ink-soft); text-decoration: none; font-size: 14px; }
+  nav a:hover { color: var(--ink); }
+
+  header { text-align: center; padding: 48px 0 8px; }
+  h1 { font-size: clamp(34px, 6vw, 54px); line-height: 1.12; font-weight: 700; letter-spacing: -0.5px; }
+  h1 em { font-style: normal; color: var(--terracotta); }
+  .sub { margin: 18px auto 0; max-width: 560px; color: var(--ink-soft); font-size: 18px; }
+
+  .install { margin: 34px auto 10px; max-width: 640px; }
+  .install-box {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--island); color: var(--paper);
+    border-radius: 16px; padding: 16px 20px;
+    font-family: var(--mono); font-size: 13.5px;
+    box-shadow: 0 14px 40px rgba(20, 15, 10, 0.25);
+    text-align: left; overflow-x: auto;
+  }
+  .install-box .dollar { color: var(--terracotta); user-select: none; }
+  .install-box code { white-space: nowrap; }
+  .copy {
+    margin-left: auto; flex: none; border: 0; cursor: pointer;
+    background: var(--terracotta); color: var(--paper);
+    font-family: var(--serif); font-weight: 600; font-size: 13px;
+    padding: 7px 14px; border-radius: 10px;
+  }
+  .copy:hover { background: var(--terracotta-deep); }
+  .req { text-align: center; color: var(--ink-soft); font-size: 13px; margin-top: 12px; }
+
+  .demo { text-align: center; padding: 36px 0 8px; }
+  .demo img { max-width: 100%; width: 540px; border-radius: 18px; box-shadow: 0 24px 70px rgba(20, 15, 10, 0.22); }
+  .demo .cap { color: var(--ink-soft); font-size: 13px; margin-top: 12px; }
+
+  section { padding: 56px 0 0; }
+  h2 { font-size: 26px; margin-bottom: 22px; text-align: center; }
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .card { background: var(--paper); border: 1px solid var(--cream-deep); border-radius: 18px; padding: 22px; }
+  .card h3 { font-size: 16px; margin-bottom: 8px; }
+  .card h3 .dot { color: var(--terracotta); }
+  .card p { color: var(--ink-soft); font-size: 14.5px; }
+  .card code { font-family: var(--mono); font-size: 12.5px; background: var(--cream-deep); padding: 1px 5px; border-radius: 5px; }
+
+  .shots { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+  .shots img { border-radius: 14px; max-width: 100%; }
+
+  .how { background: var(--paper); border: 1px solid var(--cream-deep); border-radius: 18px; padding: 26px; }
+  .how ol { margin-left: 22px; color: var(--ink-soft); font-size: 15px; }
+  .how li { margin: 8px 0; }
+  .how b { color: var(--ink); }
+
+  footer { margin-top: 72px; padding: 28px 0 40px; border-top: 1px solid var(--cream-deep);
+           display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+           color: var(--ink-soft); font-size: 13.5px; }
+  footer a { color: var(--terracotta); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav>
+    <div class="brand"><span class="star">✳</span> Claude Widget</div>
+    <a href="https://github.com/PShato0x/claude-widget">GitHub →</a>
+  </nav>
+
+  <header>
+    <h1>Claude Code, living on<br>your <em>notch</em>.</h1>
+    <p class="sub">An open-source dynamic island for your MacBook: watch what Claude is working on and approve its requests — without touching the terminal.</p>
+
+    <div class="install">
+      <div class="install-box">
+        <span class="dollar">$</span>
+        <code id="cmd">curl -fsSL https://raw.githubusercontent.com/PShato0x/claude-widget/main/get.sh | bash</code>
+        <button class="copy" onclick="navigator.clipboard.writeText(document.getElementById('cmd').textContent).then(()=>{this.textContent='Copied ✓';setTimeout(()=>this.textContent='Copy',1600)})">Copy</button>
+      </div>
+      <p class="req">macOS 14+ · Apple Silicon · Node.js 18+ · Xcode Command Line Tools · builds from source, no binaries shipped</p>
+    </div>
+  </header>
+
+  <div class="demo">
+    <img src="island-demo.gif" alt="The island under the MacBook notch expands with 'Claude requests to run pytest', Always allow is clicked, and it settles into the session overview.">
+    <p class="cap">Real capture — a request arrives, one click on <b>Always allow</b>, back to work.</p>
+  </div>
+
+  <section>
+    <h2>Why you'll leave it running</h2>
+    <div class="features">
+      <div class="card">
+        <h3><span class="dot">●</span> Approve from the notch</h3>
+        <p>When Claude wants to run a command or edit a file, the island expands with <b>Always allow / Allow once / Deny</b>. Clicking never steals focus from your work.</p>
+      </div>
+      <div class="card">
+        <h3><span class="dot">●</span> Rules that learn</h3>
+        <p><i>Always allow</i> saves a rule like <code>Bash:npm</code> — matching requests auto-approve from then on. Rules live in a plain JSON file you control.</p>
+      </div>
+      <div class="card">
+        <h3><span class="dot">●</span> Live session status</h3>
+        <p>A quiet dot pulses terracotta while Claude works, turns orange when it needs you. Hover to peek at every session and its last prompt.</p>
+      </div>
+      <div class="card">
+        <h3><span class="dot">●</span> Fails open, fails safe</h3>
+        <p>Relay down? Didn't answer in time? Claude Code falls back to its normal terminal prompt. Nothing is ever approved without you.</p>
+      </div>
+      <div class="card">
+        <h3><span class="dot">●</span> Zero-dependency core</h3>
+        <p>The relay is a single-file Node server; the island is native SwiftUI built by plain <code>swiftc</code>. No Electron, no frameworks, ~400&nbsp;KB.</p>
+      </div>
+      <div class="card">
+        <h3><span class="dot">●</span> Stays fresh</h3>
+        <p>The island tells you when a new version ships. <code>claude-widget update</code> pulls, rebuilds, and restarts everything.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How it works</h2>
+    <div class="how">
+      <ol>
+        <li><b>Claude Code hooks</b> forward permission requests and status events to a local relay — the gate hook <i>waits</i> for your decision.</li>
+        <li>The <b>relay</b> (Node, localhost:8787, bearer-token auth) holds session state, pending requests, and your always-allow rules.</li>
+        <li>The <b>island</b> polls it every 1.5&nbsp;s and expands the moment something needs you. An experimental iOS widget speaks the same protocol.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section>
+    <h2>At a glance</h2>
+    <div class="shots">
+      <img src="island-request.png" width="420" alt="Expanded island with a permission request and three action buttons">
+      <img src="island-status.png" width="340" alt="Island on hover showing a working session">
+    </div>
+  </section>
+
+  <footer>
+    <span>MIT licensed · <a href="https://github.com/PShato0x/claude-widget">Source on GitHub</a></span>
+    <span>🤖 Built with <a href="https://claude.com/claude-code">Claude Code</a></span>
+  </footer>
+
+</div>
+</body>
+</html>
