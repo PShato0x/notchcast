@@ -284,9 +284,12 @@ function handleAsk(body, res) {
   asks.set(id, job);
   if (asks.size > 50) asks.delete(asks.keys().next().value);
 
+  // Under launchd the env is minimal — make sure the child can find its own
+  // binary's directory and node on PATH.
+  const extraPath = [path.dirname(CLAUDE_BIN), path.dirname(process.execPath)].join(':');
   const child = spawn(CLAUDE_BIN, ['-p', prompt, '--output-format', 'json'], {
     cwd: body?.cwd || os.homedir(),
-    env: process.env,
+    env: { ...process.env, PATH: `${extraPath}:${process.env.PATH || '/usr/bin:/bin'}` },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let out = '', err = '';
@@ -295,11 +298,16 @@ function handleAsk(body, res) {
   child.on('error', (e) => { job.state = 'error'; job.error = String(e.message || e); });
   child.on('close', (code) => {
     if (job.state === 'error') return;
-    if (code !== 0) { job.state = 'error'; job.error = truncate(err || `claude exited with code ${code}`, 500); return; }
-    try {
-      const parsed = JSON.parse(out);
-      job.answer = parsed.result || out;
-    } catch { job.answer = out.trim(); }
+    // claude may exit non-zero while still writing a useful result JSON
+    // (e.g. "Not logged in") — prefer showing that over a bare exit code.
+    let parsed = null;
+    try { parsed = JSON.parse(out); } catch { /* not JSON */ }
+    if (code !== 0 && !parsed?.result) {
+      job.state = 'error';
+      job.error = truncate(err.trim() || out.trim() || `claude exited with code ${code}`, 500);
+      return;
+    }
+    job.answer = parsed?.result || out.trim();
     job.state = 'done';
   });
 

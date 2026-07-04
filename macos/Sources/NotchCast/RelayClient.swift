@@ -113,4 +113,26 @@ struct RelayClient {
     func setRemoteMode(_ on: Bool) async throws {
         _ = try await request("mode", method: "POST", body: ["remoteMode": on])
     }
+
+    // MARK: Quick Ask (headless `claude -p` runs on the relay)
+
+    struct AskJob: Codable {
+        var id: String
+        var prompt: String
+        var state: String   // running | done | error
+        var answer: String
+        var error: String
+    }
+
+    func startAsk(prompt: String, cwd: String?) async throws -> String {
+        struct Started: Codable { var id: String }
+        var body: [String: Any] = ["prompt": prompt]
+        if let cwd, !cwd.isEmpty { body["cwd"] = cwd }
+        let data = try await request("ask", method: "POST", body: body)
+        return try JSONDecoder().decode(Started.self, from: data).id
+    }
+
+    func askResult(id: String) async throws -> AskJob {
+        try JSONDecoder().decode(AskJob.self, from: try await request("ask/\(id)"))
+    }
 }

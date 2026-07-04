@@ -102,18 +102,101 @@ struct IslandView: View {
     private var expandedBody: some View {
         VStack(alignment: .leading, spacing: 10) {
             header
-            if let request = model.snapshot.pending.first {
-                requestSection(request, extra: model.snapshot.pending.count - 1)
-            } else if !model.connected {
-                offlineSection
-            } else {
-                sessionsSection
+            switch model.askState {
+            case .running(let prompt):
+                askRunningSection(prompt)
+            case .answer(let answer):
+                askResultSection(answer, isError: false)
+            case .error(let message):
+                askResultSection(message, isError: true)
+            case .idle:
+                if let request = model.snapshot.pending.first {
+                    requestSection(request, extra: model.snapshot.pending.count - 1)
+                } else if !model.connected {
+                    offlineSection
+                } else {
+                    sessionsSection
+                    Spacer(minLength: 0)
+                    askInputRow
+                }
             }
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 18)
         .padding(.bottom, 14)
-        .frame(width: Island.expandedWidth, height: Island.expandedBodyHeight, alignment: .topLeading)
+        .frame(width: Island.expandedWidth, height: model.bodyHeight, alignment: .topLeading)
+    }
+
+    // MARK: Quick Ask
+
+    private var askInputRow: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "sparkle")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(Island.accent)
+            if model.renderingStatic {
+                Text("Ask anything…")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Island.paperSoft)
+                Spacer(minLength: 0)
+            } else {
+                TextField("Ask anything…", text: $model.askDraft)
+                    .textFieldStyle(.plain)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Island.paper)
+                    .tint(Island.accent)
+                    .disableAutocorrection(true)
+                    .onSubmit { model.submitAsk() }
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .background(Island.slate.opacity(0.7), in: Capsule())
+    }
+
+    private func askRunningSection(_ prompt: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(prompt)
+                .font(.system(size: 11))
+                .foregroundStyle(Island.paperSoft)
+                .lineLimit(2)
+            HStack(spacing: 8) {
+                StatusDot(state: .working)
+                Text("Thinking…")
+                    .font(.system(size: 14).weight(.semibold))
+                    .foregroundStyle(Island.paper)
+                Spacer()
+                Button("Cancel") { model.dismissAsk() }
+                    .buttonStyle(.plain)
+                    .font(.system(size: 11))
+                    .foregroundStyle(Island.paperSoft)
+            }
+        }
+    }
+
+    private func askResultSection(_ text: String, isError: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Label(isError ? "Couldn't answer" : "Answer",
+                      systemImage: isError ? "exclamationmark.triangle" : "sparkle")
+                    .font(.system(size: 11).weight(.semibold))
+                    .foregroundStyle(isError ? .orange : Island.accent)
+                Spacer()
+                Button { model.dismissAsk() } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(Island.paperSoft)
+                }
+                .buttonStyle(.plain)
+            }
+            ScrollView {
+                Text(text)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Island.paper)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
     }
 
     private var header: some View {

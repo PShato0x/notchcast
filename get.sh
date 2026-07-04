@@ -73,10 +73,14 @@ VERSION="$(cat "$SRC/VERSION" 2>/dev/null || echo dev)"
 # ---------- config, token, hook scripts ----------
 say "Setting up ~/.notchcast (v$VERSION)"
 bash "$SRC/install.sh" > /dev/null
+# Record the absolute claude path: the launchd relay has a minimal PATH and
+# couldn't find `claude` otherwise (needed for Quick Ask's headless runs).
+CLAUDE_BIN_DETECTED="$(command -v claude || true)"
 node -e "
 const fs = require('fs'), p = '$CW_DIR/config.json';
 const c = JSON.parse(fs.readFileSync(p, 'utf8'));
 c.srcDir = '$SRC';
+if ('$CLAUDE_BIN_DETECTED') c.claudeBin = '$CLAUDE_BIN_DETECTED';
 fs.writeFileSync(p, JSON.stringify(c, null, 2));
 "
 

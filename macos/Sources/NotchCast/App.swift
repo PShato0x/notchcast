@@ -34,6 +34,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .sink { [weak self] expanded in self?.layoutPanel(expanded: expanded) }
             .store(in: &cancellables)
 
+        // Quick Ask answers need a taller window while expanded.
+        model.$bodyHeight
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self, self.model.expanded else { return }
+                self.layoutPanel(expanded: true)
+            }
+            .store(in: &cancellables)
+
         // Re-anchor when displays change (lid open/close, external monitor).
         NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification,
@@ -91,7 +101,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func layoutPanel(expanded: Bool) {
         let m = screenMetrics()
         let size = expanded
-            ? NSSize(width: Island.expandedWidth, height: m.barHeight + Island.expandedBodyHeight)
+            ? NSSize(width: Island.expandedWidth, height: m.barHeight + model.bodyHeight)
             : NSSize(width: m.notchWidth + 100, height: m.barHeight + 8)
         let screenFrame = targetScreen.frame
         let frame = NSRect(

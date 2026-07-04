@@ -8,8 +8,13 @@ import os from 'node:os';
 import path from 'node:path';
 
 const SETTINGS_PATH = path.join(os.homedir(), '.claude', 'settings.json');
-const GATE_CMD = 'node "$HOME/.notchcast/hooks/permission-gate.mjs"';
-const REPORT_CMD = 'node "$HOME/.notchcast/hooks/status-report.mjs"';
+
+// Use THIS node's absolute path: hooks also run in contexts with a minimal
+// PATH (launchd services, headless `claude -p` children) where a bare `node`
+// is not found and every hook would silently fail.
+const NODE_BIN = process.execPath;
+const GATE_CMD = `"${NODE_BIN}" "$HOME/.notchcast/hooks/permission-gate.mjs"`;
+const REPORT_CMD = `"${NODE_BIN}" "$HOME/.notchcast/hooks/status-report.mjs"`;
 
 let settings = {};
 try {
@@ -27,17 +32,21 @@ function hasCommand(entries, needle) {
 
 let changed = false;
 
-// Migrate hook commands from pre-rename installs
-// (~/.claude-widget or ~/.notchai -> ~/.notchcast).
+// Normalize existing NotchCast hook commands: migrate pre-rename paths
+// (~/.claude-widget, ~/.notchai) and rewrite to the canonical commands
+// (absolute node path included).
 for (const entries of Object.values(settings.hooks)) {
   for (const entry of entries || []) {
     for (const h of entry.hooks || []) {
       if (typeof h.command !== 'string') continue;
-      const migrated = h.command
-        .replaceAll('.claude-widget/', '.notchcast/')
-        .replaceAll('.notchai/', '.notchcast/');
-      if (migrated !== h.command) {
-        h.command = migrated;
+      let canonical = null;
+      if (/(\.claude-widget|\.notchai|\.notchcast)\/hooks\/permission-gate\.mjs/.test(h.command)) {
+        canonical = GATE_CMD;
+      } else if (/(\.claude-widget|\.notchai|\.notchcast)\/hooks\/status-report\.mjs/.test(h.command)) {
+        canonical = REPORT_CMD;
+      }
+      if (canonical && h.command !== canonical) {
+        h.command = canonical;
         changed = true;
       }
     }
