@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# NotchAI CLI — manage the relay, island, and updates.
+# NotchCast CLI — manage the relay, island, and updates.
 set -euo pipefail
 
-CW_DIR="$HOME/.notchai"
+CW_DIR="$HOME/.notchcast"
 CFG="$CW_DIR/config.json"
-LABEL="dev.notchai.relay"
+LABEL="dev.notchcast.relay"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 
-[[ -f "$CFG" ]] || { echo "Not installed — run the installer first (see https://github.com/PShato0x/notchai)"; exit 1; }
+[[ -f "$CFG" ]] || { echo "Not installed — run the installer first (see https://github.com/PShato0x/notchcast)"; exit 1; }
 
 cfg() { node -e "console.log(JSON.parse(require('fs').readFileSync('$CFG','utf8')).$1 ?? '')"; }
 SRC="$(cfg srcDir)"
@@ -16,9 +16,9 @@ PORT="$(cfg port)"; PORT="${PORT:-8787}"
 [[ -d "$SRC" ]] || { echo "Source checkout missing ($SRC) — re-run the installer."; exit 1; }
 
 relaunch_island() {
-  pkill -x NotchAI 2>/dev/null || true
+  pkill -x NotchCast 2>/dev/null || true
   sleep 0.5
-  open "$SRC/macos/NotchAI.app"
+  open "$SRC/macos/NotchCast.app"
 }
 
 case "${1:-help}" in
@@ -31,8 +31,8 @@ case "${1:-help}" in
     curl -sf -H "Authorization: Bearer $TOKEN" "http://127.0.0.1:$PORT/status" | node -e "
 let d=''; process.stdin.on('data',c=>d+=c).on('end',()=>{
   const s = JSON.parse(d);
-  console.log('NotchAI v' + (s.version || '?')
-    + (s.updateAvailable ? '  →  v' + s.latestVersion + ' available (notchai update)' : '  (up to date)'));
+  console.log('NotchCast v' + (s.version || '?')
+    + (s.updateAvailable ? '  →  v' + s.latestVersion + ' available (notchcast update)' : '  (up to date)'));
   console.log('Remote approvals: ' + (s.remoteMode ? 'on' : 'off'));
   const live = s.sessions.filter(x => x.state !== 'ended');
   console.log('Sessions: ' + (live.length || 'none'));
@@ -42,7 +42,7 @@ let d=''; process.stdin.on('data',c=>d+=c).on('end',()=>{
     for (const p of s.pending) console.log('  ! ' + p.project + ': ' + p.summary);
   }
   console.log('Always-allow rules: ' + s.rules.length);
-});" || { echo "Relay not responding on port $PORT — try: notchai restart"; exit 1; }
+});" || { echo "Relay not responding on port $PORT — try: notchcast restart"; exit 1; }
     ;;
   restart)
     launchctl kickstart -k "gui/$(id -u)/$LABEL" 2>/dev/null || {
@@ -58,18 +58,18 @@ let d=''; process.stdin.on('data',c=>d+=c).on('end',()=>{
     cat "$SRC/VERSION" 2>/dev/null || echo dev
     ;;
   uninstall)
-    echo "Removing relay service, island, and CLI (keeps ~/.notchai config + your clone)…"
+    echo "Removing relay service, island, and CLI (keeps ~/.notchcast config + your clone)…"
     launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
     rm -f "$PLIST"
-    pkill -x NotchAI 2>/dev/null || true
-    osascript -e 'tell application "System Events" to delete (every login item whose name is "NotchAI")' >/dev/null 2>&1 || true
-    rm -f "$HOME/.local/bin/notchai"
-    echo "Done. To remove the hooks, delete the notchai entries from ~/.claude/settings.json."
-    echo "To remove everything: rm -rf ~/.notchai"
+    pkill -x NotchCast 2>/dev/null || true
+    osascript -e 'tell application "System Events" to delete (every login item whose name is "NotchCast")' >/dev/null 2>&1 || true
+    rm -f "$HOME/.local/bin/notchcast"
+    echo "Done. To remove the hooks, delete the notchcast entries from ~/.claude/settings.json."
+    echo "To remove everything: rm -rf ~/.notchcast"
     ;;
   help|*)
     cat <<'EOF'
-notchai — Claude Code status on your Mac's notch
+notchcast — Claude Code status on your Mac's notch
   status      relay version, sessions, pending approvals
   update      pull the latest version, rebuild, restart
   restart     restart the relay service and the island app

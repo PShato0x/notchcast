@@ -5,7 +5,7 @@
 node_modules/
 
 # macOS island build artifacts
-macos/NotchAI.app/
+macos/NotchCast.app/
 macos/.build/
 
 xcuserdata/

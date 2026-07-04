@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// NotchAI relay server.
+// NotchCast relay server.
 // Runs on the Mac next to Claude Code. Hooks POST events here; clients (the
 // island) poll /status and answer permission requests via /respond.
 // Zero dependencies — requires Node 18+.
@@ -12,7 +12,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const CONFIG_DIR = path.join(os.homedir(), '.notchai');
+const CONFIG_DIR = path.join(os.homedir(), '.notchcast');
 const CONFIG_PATH = path.join(CONFIG_DIR, 'config.json');
 const RULES_PATH = path.join(CONFIG_DIR, 'rules.json');
 
@@ -35,7 +35,7 @@ const CLAUDE_BIN = process.env.CW_CLAUDE_BIN || fileConfig.claudeBin || 'claude'
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 
 if (!TOKEN) {
-  console.error('No auth token configured. Run install.sh or set CW_TOKEN / token in ~/.notchai/config.json');
+  console.error('No auth token configured. Run install.sh or set CW_TOKEN / token in ~/.notchcast/config.json');
   process.exit(1);
 }
 
@@ -47,7 +47,7 @@ let rules = loadJSON(RULES_PATH, []); // array of signature strings, e.g. "Bash:
 const SRC_DIR = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const VERSION_URL = process.env.CW_VERSION_URL
   || fileConfig.versionUrl
-  || 'https://raw.githubusercontent.com/PShato0x/notchai/main/VERSION';
+  || 'https://raw.githubusercontent.com/PShato0x/notchcast/main/VERSION';
 const CURRENT_VERSION = (() => {
   try { return fs.readFileSync(path.join(SRC_DIR, 'VERSION'), 'utf8').trim(); } catch { return '0.0.0'; }
 })();
@@ -198,7 +198,7 @@ async function handleGate(payload, res) {
 
   if (rules.includes(sig)) {
     touchSession(payload, { state: 'working', currentTool: tool });
-    return send(res, 200, { decision: 'allow', reason: `Matched saved rule "${sig}" (NotchAI)` });
+    return send(res, 200, { decision: 'allow', reason: `Matched saved rule "${sig}" (NotchCast)` });
   }
 
   const id = crypto.randomUUID();
@@ -241,7 +241,7 @@ function handleRespond(body, res) {
   }
   entry.resolve(
     decision === 'deny'
-      ? { decision: 'deny', reason: 'Denied remotely (NotchAI)' }
+      ? { decision: 'deny', reason: 'Denied remotely (NotchCast)' }
       : { decision: 'allow', reason: `Approved remotely (${decision === 'always' ? 'always allow' : 'allow once'})` }
   );
   send(res, 200, { ok: true });
@@ -345,7 +345,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`NotchAI relay listening on http://${HOST}:${PORT}`);
+  console.log(`NotchCast relay listening on http://${HOST}:${PORT}`);
   if (HOST !== '127.0.0.1') {
     const nets = os.networkInterfaces();
     const lan = Object.values(nets).flat().find((n) => n && n.family === 'IPv4' && !n.internal);

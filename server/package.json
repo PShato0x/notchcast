@@ -1,7 +1,7 @@
 {
-  "name": "notchai-relay",
+  "name": "notchcast-relay",
   "version": "0.1.0",
-  "description": "Relay server between Claude Code hooks and the NotchAI island",
+  "description": "Relay server between Claude Code hooks and the NotchCast island",
   "type": "module",
   "main": "server.js",
   "scripts": {

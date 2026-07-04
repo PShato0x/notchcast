@@ -1,4 +1,4 @@
-# NotchAI
+# NotchCast
 
 ✦ A dynamic island for your MacBook's notch. See what your AI coding agent is working on and approve its permission requests with one click — without staring at the terminal. Works with [Claude Code](https://claude.com/claude-code) today.
 
@@ -6,10 +6,10 @@
   <img src="docs/island-demo.svg" width="500" alt="The island under the MacBook notch expands with “Requests to run `cargo test`”, the request is approved, and it settles back into the collapsed strip">
 </p>
 <p align="center">
-  <img src="docs/island-request.png" width="508" alt="NotchAI expanded under the MacBook notch: “Requests to run `npm test`” with Always allow / Allow once / Deny buttons">
+  <img src="docs/island-request.png" width="508" alt="NotchCast expanded under the MacBook notch: “Requests to run `npm test`” with Always allow / Allow once / Deny buttons">
 </p>
 <p align="center">
-  <img src="docs/island-status.png" width="380" alt="NotchAI showing a working session on hover">
+  <img src="docs/island-status.png" width="380" alt="NotchCast showing a working session on hover">
   &nbsp;
   <img src="docs/island-collapsed.png" width="240" alt="Collapsed island: a slim strip hugging the notch with a status dot">
 </p>
@@ -18,19 +18,19 @@
 ## Install (one line)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/PShato0x/notchai/main/get.sh | bash
+curl -fsSL https://raw.githubusercontent.com/PShato0x/notchcast/main/get.sh | bash
 ```
 
-Needs macOS 14+ (Apple Silicon), Node.js 18+, and the Xcode Command Line Tools. Everything builds from source on your machine — no binaries are shipped. The installer is idempotent and doubles as the updater; afterwards you get a `notchai` CLI:
+Needs macOS 14+ (Apple Silicon), Node.js 18+, and the Xcode Command Line Tools. Everything builds from source on your machine — no binaries are shipped. The installer is idempotent and doubles as the updater; afterwards you get a `notchcast` CLI:
 
 ```
-notchai status      # relay version, sessions, pending approvals
-notchai update      # pull latest, rebuild, restart (island shows "↑ Update available" when there is one)
-notchai restart     # bounce the relay + island
-notchai uninstall   # remove services and app
+notchcast status      # relay version, sessions, pending approvals
+notchcast update      # pull latest, rebuild, restart (island shows "↑ Update available" when there is one)
+notchcast restart     # bounce the relay + island
+notchcast uninstall   # remove services and app
 ```
 
-Prefer to read before piping to bash? Quite right: [get.sh](get.sh). Manual setup is documented below. **Website: [notchai-production.up.railway.app](https://notchai-production.up.railway.app/)**
+Prefer to read before piping to bash? Quite right: [get.sh](get.sh). Manual setup is documented below. **Website: [notchcast.com](https://notchcast.com/)**
 
 ## Features
 
@@ -54,7 +54,7 @@ Prefer to read before piping to bash? Quite right: [get.sh](get.sh). Manual setu
 │   ▲                                     │
 │   │  /status polling · /respond         │
 │   ▼                                     │
-│  ✦ NotchAI island (notch app, macos/)   │
+│  ✦ NotchCast island (notch app, macos/)   │
 └─────────────────────────────────────────┘
 ```
 
@@ -65,21 +65,21 @@ Prefer to read before piping to bash? Quite right: [get.sh](get.sh). Manual setu
 ## Manual setup
 
 ```bash
-./install.sh                    # once: creates ~/.notchai (token + hooks)
+./install.sh                    # once: creates ~/.notchcast (token + hooks)
 node server/server.js &         # the relay; keep it running
 cd macos && ./build.sh --run    # build + launch the island (needs only Command Line Tools)
 ```
 
-Then merge [hooks/settings.example.json](hooks/settings.example.json) into `~/.claude/settings.json` and restart Claude Code. To route approvals only for specific projects, put the hooks in that project's `.claude/settings.json` instead. The island reads its config from `~/.notchai/config.json` automatically.
+Then merge [hooks/settings.example.json](hooks/settings.example.json) into `~/.claude/settings.json` and restart Claude Code. To route approvals only for specific projects, put the hooks in that project's `.claude/settings.json` instead. The island reads its config from `~/.notchcast/config.json` automatically.
 
 > `build.sh` compiles with plain `swiftc` (no Xcode.app needed) and auto-works-around a common broken-CLT issue (stale duplicate `SwiftBridging` modulemap). A SwiftPM [Package.swift](macos/Package.swift) is also included if you prefer `swift build`.
 
 ## Security notes
 
 - Every endpoint requires the bearer token created by `install.sh`. Treat it like a password.
-- The relay binds to `127.0.0.1` by default — nothing outside this Mac can reach it. To pair a remote client, set `"host": "0.0.0.0"` in `~/.notchai/config.json`, prefer **Tailscale** (encrypts end-to-end), and never port-forward 8787 to the internet.
+- The relay binds to `127.0.0.1` by default — nothing outside this Mac can reach it. To pair a remote client, set `"host": "0.0.0.0"` in `~/.notchcast/config.json`, prefer **Tailscale** (encrypts end-to-end), and never port-forward 8787 to the internet.
 - The permission gate **fails open to the terminal** — a dead relay never silently approves anything.
-- "Always allow" rules live in `~/.notchai/rules.json`; clear them anytime by deleting entries.
+- "Always allow" rules live in `~/.notchcast/rules.json`; clear them anytime by deleting entries.
 
 ## Limitations (v1)
 
@@ -91,7 +91,7 @@ Then merge [hooks/settings.example.json](hooks/settings.example.json) into `~/.c
 
 - [ ] Quick Ask input right in the notch
 - [ ] Click a session to peek at its transcript ("View Session")
-- [ ] Homebrew tap (`brew install notchai`)
+- [ ] Homebrew tap (`brew install notchcast`)
 - [ ] Adapters for more agents (Codex CLI, Gemini CLI) over the same relay protocol
 
 ## Contributing

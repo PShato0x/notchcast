@@ -1,5 +1,5 @@
 {
-  "$comment": "Merge this into ~/.claude/settings.json (or a project's .claude/settings.json). install.sh copies the hook scripts to ~/.notchai/hooks and prints this snippet with resolved paths.",
+  "$comment": "Merge this into ~/.claude/settings.json (or a project's .claude/settings.json). install.sh copies the hook scripts to ~/.notchcast/hooks and prints this snippet with resolved paths.",
   "hooks": {
     "PreToolUse": [
       {
@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$HOME/.notchai/hooks/permission-gate.mjs\"",
+            "command": "node \"$HOME/.notchcast/hooks/permission-gate.mjs\"",
             "timeout": 180
           }
         ]
@@ -16,35 +16,35 @@
     "UserPromptSubmit": [
       {
         "hooks": [
-          { "type": "command", "command": "node \"$HOME/.notchai/hooks/status-report.mjs\"", "timeout": 10 }
+          { "type": "command", "command": "node \"$HOME/.notchcast/hooks/status-report.mjs\"", "timeout": 10 }
         ]
       }
     ],
     "PostToolUse": [
       {
         "hooks": [
-          { "type": "command", "command": "node \"$HOME/.notchai/hooks/status-report.mjs\"", "timeout": 10 }
+          { "type": "command", "command": "node \"$HOME/.notchcast/hooks/status-report.mjs\"", "timeout": 10 }
         ]
       }
     ],
     "Stop": [
       {
         "hooks": [
-          { "type": "command", "command": "node \"$HOME/.notchai/hooks/status-report.mjs\"", "timeout": 10 }
+          { "type": "command", "command": "node \"$HOME/.notchcast/hooks/status-report.mjs\"", "timeout": 10 }
         ]
       }
     ],
     "Notification": [
       {
         "hooks": [
-          { "type": "command", "command": "node \"$HOME/.notchai/hooks/status-report.mjs\"", "timeout": 10 }
+          { "type": "command", "command": "node \"$HOME/.notchcast/hooks/status-report.mjs\"", "timeout": 10 }
         ]
       }
     ],
     "SessionEnd": [
       {
         "hooks": [
-          { "type": "command", "command": "node \"$HOME/.notchai/hooks/status-report.mjs\"", "timeout": 10 }
+          { "type": "command", "command": "node \"$HOME/.notchcast/hooks/status-report.mjs\"", "timeout": 10 }
         ]
       }
     ]

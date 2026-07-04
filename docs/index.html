@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NotchAI — your coding agent, on your notch</title>
+<title>NotchCast — your coding agent, on your notch</title>
 <meta name="description" content="An open-source dynamic island for your MacBook notch: watch what your AI coding agent is doing and approve its requests with one click.">
-<meta property="og:title" content="NotchAI — your coding agent, on your notch">
+<meta property="og:title" content="NotchCast — your coding agent, on your notch">
 <meta property="og:description" content="A dynamic island for your MacBook notch: live agent status and one-click permission approvals.">
-<meta property="og:image" content="https://notchai-production.up.railway.app/island-request.png">
+<meta property="og:image" content="https://notchcast.com/island-request.png">
 <style>
   :root {
     --bg: #09090B;
@@ -68,7 +68,7 @@
 </head>
 <body>
 <main>
-  <a class="brand" href="https://github.com/PShato0x/notchai"><span class="spark">✦</span> NotchAI</a>
+  <a class="brand" href="https://github.com/PShato0x/notchcast"><span class="spark">✦</span> NotchCast</a>
   <h1>Your coding agent,<br>on your <span class="grad">notch</span>.</h1>
   <p class="sub">Live status and one-click permission approvals for AI coding agents. Works with Claude Code today.</p>
 
@@ -78,20 +78,20 @@
 
   <div class="install-box">
     <span class="dollar">$</span>
-    <span class="cmd-scroll"><code id="cmd">curl -fsSL https://raw.githubusercontent.com/PShato0x/notchai/main/get.sh | bash</code></span>
+    <span class="cmd-scroll"><code id="cmd">curl -fsSL https://raw.githubusercontent.com/PShato0x/notchcast/main/get.sh | bash</code></span>
     <button class="copy" onclick="navigator.clipboard.writeText(document.getElementById('cmd').textContent).then(()=>{this.textContent='Copied ✓';setTimeout(()=>this.textContent='Copy',1600)})">Copy</button>
   </div>
   <p class="meta"><span id="ver">v0.4.2</span><span>macOS 14+</span><span>Apple Silicon</span><span>builds from source</span><span>MIT</span></p>
   <script>
-    fetch('https://raw.githubusercontent.com/PShato0x/notchai/main/VERSION')
+    fetch('https://raw.githubusercontent.com/PShato0x/notchcast/main/VERSION')
       .then(r => r.ok ? r.text() : null)
       .then(v => { if (v) document.getElementById('ver').textContent = 'v' + v.trim(); })
       .catch(() => {});
   </script>
 
   <footer>
-    <span><a href="https://github.com/PShato0x/notchai">GitHub</a></span>
-    <span><a href="https://github.com/PShato0x/notchai/blob/main/get.sh">read get.sh first</a></span>
+    <span><a href="https://github.com/PShato0x/notchcast">GitHub</a></span>
+    <span><a href="https://github.com/PShato0x/notchcast/blob/main/get.sh">read get.sh first</a></span>
     <span><a href="https://claude.com/claude-code">built with Claude Code</a></span>
   </footer>
 </main>

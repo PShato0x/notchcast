@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Minimal static server for the NotchAI website (docs/) — used by the Railway
+// Minimal static server for the NotchCast website (docs/) — used by the Railway
 // deployment. Zero dependencies, same philosophy as the relay.
 
 import http from 'node:http';
@@ -42,4 +42,4 @@ http.createServer((req, res) => {
       res.end(data);
     });
   });
-}).listen(PORT, '0.0.0.0', () => console.log(`NotchAI site on :${PORT}, serving ${ROOT}`));
+}).listen(PORT, '0.0.0.0', () => console.log(`NotchCast site on :${PORT}, serving ${ROOT}`));

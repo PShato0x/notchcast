@@ -68,7 +68,7 @@ enum RelayError: LocalizedError {
 }
 
 /// Talks to the local relay (server/server.js). Reads the token and port from
-/// ~/.notchai/config.json — the same file install.sh creates, so the
+/// ~/.notchcast/config.json — the same file install.sh creates, so the
 /// island needs zero extra setup.
 struct RelayClient {
     var baseURL: URL
@@ -76,7 +76,7 @@ struct RelayClient {
 
     static func fromConfigFile() -> RelayClient? {
         let path = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".notchai/config.json")
+            .appendingPathComponent(".notchcast/config.json")
         guard
             let data = try? Data(contentsOf: path),
             let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],

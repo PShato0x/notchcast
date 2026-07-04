@@ -1,5 +1,5 @@
 <svg viewBox="0 0 560 195" width="560" height="195" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">
-  <title>NotchAI demo: a permission request arrives at the notch, gets approved, and the island collapses back.</title>
+  <title>NotchCast demo: a permission request arrives at the notch, gets approved, and the island collapses back.</title>
   <style>
     .island { filter: drop-shadow(0 4px 10px rgba(0,0,0,.45)); }
     .grp { transform-box: fill-box; transform-origin: 50% 0; }
