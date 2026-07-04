@@ -119,8 +119,8 @@ struct IslandView: View {
                         Text("Opening \(title)…")
                             .font(.system(size: 12))
                             .foregroundStyle(Island.paperSoft)
-                    case .loaded(let transcript):
-                        transcriptSection(transcript)
+                    case .loaded(let transcript, let sessionID):
+                        transcriptSection(transcript, sessionID: sessionID)
                     case .error(let message):
                         askResultSection(message, isError: true) { model.dismissTranscript() }
                     case .idle:
@@ -213,7 +213,7 @@ struct IslandView: View {
         }
     }
 
-    private func transcriptSection(_ transcript: RelayClient.Transcript) -> some View {
+    private func transcriptSection(_ transcript: RelayClient.Transcript, sessionID: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Label(transcript.title, systemImage: "text.bubble")
@@ -245,6 +245,28 @@ struct IslandView: View {
                 }
             }
             .defaultScrollAnchor(.bottom)
+            HStack(spacing: 8) {
+                Image(systemName: "arrowshape.turn.up.left")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(Island.accent)
+                if model.renderingStatic {
+                    Text("Reply — try “continue”…")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Island.paperSoft)
+                    Spacer(minLength: 0)
+                } else {
+                    TextField("Reply — try “continue”…", text: $model.replyDraft)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: 12))
+                        .foregroundStyle(Island.paper)
+                        .tint(Island.accent)
+                        .disableAutocorrection(true)
+                        .onSubmit { model.submitReply(sessionID: sessionID) }
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(Island.slate.opacity(0.7), in: Capsule())
         }
     }
 

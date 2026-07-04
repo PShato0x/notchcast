@@ -45,6 +45,7 @@ final class StatusModel: ObservableObject {
             || snapshot.liveSessions.contains { $0.state == "attention" }
             || askState != .idle
             || !askDraft.isEmpty
+            || !replyDraft.isEmpty
             || transcriptState != .idle
     }
 
@@ -109,26 +110,35 @@ final class StatusModel: ObservableObject {
                 // Run in the most recent session's project so answers have context.
                 let cwd = snapshot.liveSessions.first?.cwd
                 let id = try await client.startAsk(prompt: prompt, cwd: cwd)
-                for _ in 0..<120 { // up to ~4 minutes
-                    try await Task.sleep(for: .seconds(2))
-                    guard askState == .running(prompt: prompt) else { return } // dismissed
-                    let job = try await client.askResult(id: id)
-                    if job.state == "done" {
-                        // Headless runs use the CLI's own login, which may be
-                        // missing even when the desktop app is signed in.
-                        if job.answer.contains("authentication_error") || job.answer.contains("Not logged in") {
-                            askState = .error("The claude CLI isn't logged in on this Mac. Run `claude /login` in a terminal once, then ask again.")
-                        } else {
-                            askState = .answer(job.answer)
-                        }
-                        return
-                    }
-                    if job.state == "error" { askState = .error(job.error); return }
-                }
-                askState = .error("Timed out waiting for an answer.")
+                await pollAskJob(id: id, prompt: prompt)
             } catch {
                 askState = .error(error.localizedDescription)
             }
+        }
+    }
+
+    private func pollAskJob(id: String, prompt: String) async {
+        guard let client else { return }
+        do {
+            for _ in 0..<150 { // up to ~5 minutes
+                try await Task.sleep(for: .seconds(2))
+                guard askState == .running(prompt: prompt) else { return } // dismissed
+                let job = try await client.askResult(id: id)
+                if job.state == "done" {
+                    // Headless runs use the CLI's own login, which may be
+                    // missing even when the desktop app is signed in.
+                    if job.answer.contains("authentication_error") || job.answer.contains("Not logged in") {
+                        askState = .error("The claude CLI isn't logged in on this Mac. Run `claude /login` in a terminal once, then ask again.")
+                    } else {
+                        askState = .answer(job.answer)
+                    }
+                    return
+                }
+                if job.state == "error" { askState = .error(job.error); return }
+            }
+            askState = .error("Timed out waiting for an answer.")
+        } catch {
+            askState = .error(error.localizedDescription)
         }
     }
 
@@ -141,20 +151,22 @@ final class StatusModel: ObservableObject {
     enum TranscriptState: Equatable {
         case idle
         case loading(title: String)
-        case loaded(RelayClient.Transcript)
+        case loaded(RelayClient.Transcript, sessionID: String)
         case error(String)
     }
 
     @Published private(set) var transcriptState: TranscriptState = .idle {
         didSet { updateBodyHeight(); recomputeExpansion() }
     }
+    /// Bound to the transcript reply field ("continue", "now add tests", …).
+    @Published var replyDraft = "" { didSet { recomputeExpansion() } }
 
     func viewSession(_ session: SessionStatus) {
         guard let client else { return }
         transcriptState = .loading(title: session.title)
         Task {
             do {
-                transcriptState = .loaded(try await client.transcript(sessionID: session.id))
+                transcriptState = .loaded(try await client.transcript(sessionID: session.id), sessionID: session.id)
             } catch {
                 transcriptState = .error("Couldn't load the transcript — the session may be too new or its file moved.")
             }
@@ -163,6 +175,25 @@ final class StatusModel: ObservableObject {
 
     func dismissTranscript() {
         transcriptState = .idle
+        replyDraft = ""
+    }
+
+    /// Continue the session's conversation from the notch. Reuses the ask
+    /// spinner/answer flow; the continued run also appears as a live session.
+    func submitReply(sessionID: String) {
+        let prompt = replyDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !prompt.isEmpty, let client else { return }
+        replyDraft = ""
+        transcriptState = .idle
+        askState = .running(prompt: prompt)
+        Task {
+            do {
+                let id = try await client.replySession(sessionID: sessionID, prompt: prompt)
+                await pollAskJob(id: id, prompt: prompt)
+            } catch {
+                askState = .error(error.localizedDescription)
+            }
+        }
     }
 
     private func updateBodyHeight() {

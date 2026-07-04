@@ -316,20 +316,20 @@ function handleEvent(payload, res) {
   send(res, 200, { ok: true });
 }
 
-function handleAsk(body, res) {
-  const prompt = (body?.prompt || '').trim();
-  if (!prompt) return send(res, 400, { error: 'prompt required' });
-
+function startClaudeJob({ prompt, cwd, resume }) {
   const id = crypto.randomUUID();
   const job = { id, prompt: truncate(prompt, 300), state: 'running', answer: '', error: '', createdAt: Date.now() };
   asks.set(id, job);
   if (asks.size > 50) asks.delete(asks.keys().next().value);
 
+  const args = ['-p', prompt, '--output-format', 'json'];
+  if (resume) args.push('--resume', resume); // continue an existing conversation
+
   // Under launchd the env is minimal — make sure the child can find its own
   // binary's directory and node on PATH.
   const extraPath = [path.dirname(CLAUDE_BIN), path.dirname(process.execPath)].join(':');
-  const child = spawn(CLAUDE_BIN, ['-p', prompt, '--output-format', 'json'], {
-    cwd: body?.cwd || os.homedir(),
+  const child = spawn(CLAUDE_BIN, args, {
+    cwd: cwd || os.homedir(),
     env: { ...process.env, PATH: `${extraPath}:${process.env.PATH || '/usr/bin:/bin'}` },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -352,7 +352,24 @@ function handleAsk(body, res) {
     job.state = 'done';
   });
 
-  send(res, 200, { id });
+  return id;
+}
+
+function handleAsk(body, res) {
+  const prompt = (body?.prompt || '').trim();
+  if (!prompt) return send(res, 400, { error: 'prompt required' });
+  send(res, 200, { id: startClaudeJob({ prompt, cwd: body?.cwd }) });
+}
+
+// Continue an existing session's conversation from the island ("continue",
+// "now add tests", ...). Runs headless with the session's full context; the
+// continued run reports itself via hooks, so it shows up live on the island.
+function handleReply(sessionId, body, res) {
+  const prompt = (body?.prompt || '').trim();
+  if (!prompt) return send(res, 400, { error: 'prompt required' });
+  const session = sessions.get(sessionId);
+  if (!session) return send(res, 404, { error: 'unknown session' });
+  send(res, 200, { id: startClaudeJob({ prompt, cwd: session.cwd, resume: sessionId }) });
 }
 
 // ---------- server ----------
@@ -382,6 +399,9 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true });
     }
     if (req.method === 'POST' && url.pathname === '/ask') return handleAsk(body, res);
+    if (req.method === 'POST' && /^\/session\/[^/]+\/reply$/.test(url.pathname)) {
+      return handleReply(url.pathname.split('/')[2], body, res);
+    }
     if (req.method === 'GET' && /^\/session\/[^/]+\/transcript$/.test(url.pathname)) {
       const sessionId = url.pathname.split('/')[2];
       const session = sessions.get(sessionId);

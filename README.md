@@ -92,6 +92,7 @@ Then merge [hooks/settings.example.json](hooks/settings.example.json) into `~/.c
 
 - [x] Quick Ask input right in the notch *(v0.6.0)*
 - [x] Click a session to peek at its transcript ("View Session") *(v0.7.0)*
+- [x] Reply to a session from the notch — type "continue" and Claude keeps working *(v0.8.0)*
 - [ ] Homebrew tap (`brew install notchcast`)
 - [ ] Adapters for more agents (Codex CLI, Gemini CLI) over the same relay protocol
 
