@@ -45,6 +45,7 @@ final class StatusModel: ObservableObject {
             || snapshot.liveSessions.contains { $0.state == "attention" }
             || askState != .idle
             || !askDraft.isEmpty
+            || transcriptState != .idle
     }
 
     /// Aggregate state that drives the collapsed indicator dot.
@@ -135,9 +136,42 @@ final class StatusModel: ObservableObject {
         askState = .idle
     }
 
+    // MARK: View Session (transcript peek)
+
+    enum TranscriptState: Equatable {
+        case idle
+        case loading(title: String)
+        case loaded(RelayClient.Transcript)
+        case error(String)
+    }
+
+    @Published private(set) var transcriptState: TranscriptState = .idle {
+        didSet { updateBodyHeight(); recomputeExpansion() }
+    }
+
+    func viewSession(_ session: SessionStatus) {
+        guard let client else { return }
+        transcriptState = .loading(title: session.title)
+        Task {
+            do {
+                transcriptState = .loaded(try await client.transcript(sessionID: session.id))
+            } catch {
+                transcriptState = .error("Couldn't load the transcript — the session may be too new or its file moved.")
+            }
+        }
+    }
+
+    func dismissTranscript() {
+        transcriptState = .idle
+    }
+
     private func updateBodyHeight() {
         switch askState {
-        case .answer, .error: bodyHeight = 280
+        case .answer, .error: bodyHeight = 280; return
+        default: break
+        }
+        switch transcriptState {
+        case .loaded, .error: bodyHeight = 300
         default: bodyHeight = Island.expandedBodyHeight
         }
     }

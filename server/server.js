@@ -124,10 +124,51 @@ function touchSession(payload, patch = {}) {
     lastPrompt: '',
     currentTool: '',
     message: '',
+    transcriptPath: '',
   };
   const next = { ...prev, ...patch, updatedAt: Date.now() };
+  if (payload.transcript_path) next.transcriptPath = payload.transcript_path;
   sessions.set(id, next);
   return next;
+}
+
+// Read the last `bytes` of a file without loading multi-MB transcripts whole.
+function tailRead(filePath, bytes = 512 * 1024) {
+  const fd = fs.openSync(filePath, 'r');
+  try {
+    const size = fs.fstatSync(fd).size;
+    const start = Math.max(0, size - bytes);
+    const buf = Buffer.alloc(size - start);
+    fs.readSync(fd, buf, 0, buf.length, start);
+    return buf.toString('utf8');
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
+// Parse a Claude Code transcript (.jsonl) tail into simple {role, text} turns.
+function transcriptTail(filePath, limit = 12) {
+  const lines = tailRead(filePath).split('\n').filter(Boolean);
+  const entries = [];
+  for (const line of lines) {
+    let obj;
+    try { obj = JSON.parse(line); } catch { continue; } // first line may be cut by the tail window
+    const msg = obj.message;
+    if (!msg || (obj.type !== 'user' && obj.type !== 'assistant') || obj.isMeta) continue;
+    let text = '';
+    if (typeof msg.content === 'string') {
+      text = msg.content;
+    } else if (Array.isArray(msg.content)) {
+      text = msg.content
+        .map((b) => (b.type === 'text' ? b.text : b.type === 'tool_use' ? `[${b.name}]` : ''))
+        .filter(Boolean)
+        .join(' ');
+    }
+    text = text.trim();
+    if (!text || text.startsWith('<system-reminder>') || text.startsWith('<local-command')) continue;
+    entries.push({ role: msg.role || obj.type, text: truncate(text, 600) });
+  }
+  return entries.slice(-limit);
 }
 
 function pruneSessions() {
@@ -341,6 +382,16 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true });
     }
     if (req.method === 'POST' && url.pathname === '/ask') return handleAsk(body, res);
+    if (req.method === 'GET' && /^\/session\/[^/]+\/transcript$/.test(url.pathname)) {
+      const sessionId = url.pathname.split('/')[2];
+      const session = sessions.get(sessionId);
+      if (!session?.transcriptPath) return send(res, 404, { error: 'no transcript known for this session' });
+      try {
+        return send(res, 200, { title: session.title, entries: transcriptTail(session.transcriptPath) });
+      } catch (e) {
+        return send(res, 404, { error: `transcript unreadable: ${e.code || e.message}` });
+      }
+    }
     if (req.method === 'GET' && url.pathname.startsWith('/ask/')) {
       const job = asks.get(url.pathname.slice('/ask/'.length));
       if (!job) return send(res, 404, { error: 'not found' });

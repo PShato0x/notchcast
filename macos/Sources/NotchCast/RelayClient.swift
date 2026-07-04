@@ -135,4 +135,21 @@ struct RelayClient {
     func askResult(id: String) async throws -> AskJob {
         try JSONDecoder().decode(AskJob.self, from: try await request("ask/\(id)"))
     }
+
+    // MARK: Session transcript peek
+
+    struct TranscriptEntry: Codable, Hashable, Identifiable {
+        var role: String    // "user" | "assistant"
+        var text: String
+        var id: Int { hashValue }
+    }
+
+    struct Transcript: Codable, Equatable {
+        var title: String
+        var entries: [TranscriptEntry]
+    }
+
+    func transcript(sessionID: String) async throws -> Transcript {
+        try JSONDecoder().decode(Transcript.self, from: try await request("session/\(sessionID)/transcript"))
+    }
 }

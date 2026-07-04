@@ -102,22 +102,36 @@ struct IslandView: View {
     private var expandedBody: some View {
         VStack(alignment: .leading, spacing: 10) {
             header
-            switch model.askState {
-            case .running(let prompt):
-                askRunningSection(prompt)
-            case .answer(let answer):
-                askResultSection(answer, isError: false)
-            case .error(let message):
-                askResultSection(message, isError: true)
-            case .idle:
-                if let request = model.snapshot.pending.first {
-                    requestSection(request, extra: model.snapshot.pending.count - 1)
-                } else if !model.connected {
-                    offlineSection
-                } else {
-                    sessionsSection
-                    Spacer(minLength: 0)
-                    askInputRow
+            if let request = model.snapshot.pending.first {
+                // Approvals always take priority — the session is blocked on them.
+                requestSection(request, extra: model.snapshot.pending.count - 1)
+            } else {
+                switch model.askState {
+                case .running(let prompt):
+                    askRunningSection(prompt)
+                case .answer(let answer):
+                    askResultSection(answer, isError: false) { model.dismissAsk() }
+                case .error(let message):
+                    askResultSection(message, isError: true) { model.dismissAsk() }
+                case .idle:
+                    switch model.transcriptState {
+                    case .loading(let title):
+                        Text("Opening \(title)…")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Island.paperSoft)
+                    case .loaded(let transcript):
+                        transcriptSection(transcript)
+                    case .error(let message):
+                        askResultSection(message, isError: true) { model.dismissTranscript() }
+                    case .idle:
+                        if !model.connected {
+                            offlineSection
+                        } else {
+                            sessionsSection
+                            Spacer(minLength: 0)
+                            askInputRow
+                        }
+                    }
                 }
             }
             Spacer(minLength: 0)
@@ -174,15 +188,15 @@ struct IslandView: View {
         }
     }
 
-    private func askResultSection(_ text: String, isError: Bool) -> some View {
+    private func askResultSection(_ text: String, isError: Bool, onDismiss: @escaping () -> Void) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Label(isError ? "Couldn't answer" : "Answer",
+                Label(isError ? "Something went wrong" : "Answer",
                       systemImage: isError ? "exclamationmark.triangle" : "sparkle")
                     .font(.system(size: 11).weight(.semibold))
                     .foregroundStyle(isError ? .orange : Island.accent)
                 Spacer()
-                Button { model.dismissAsk() } label: {
+                Button(action: onDismiss) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 14))
                         .foregroundStyle(Island.paperSoft)
@@ -196,6 +210,41 @@ struct IslandView: View {
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
+        }
+    }
+
+    private func transcriptSection(_ transcript: RelayClient.Transcript) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Label(transcript.title, systemImage: "text.bubble")
+                    .font(.system(size: 11).weight(.semibold))
+                    .foregroundStyle(Island.accent)
+                    .lineLimit(1)
+                Spacer()
+                Button { model.dismissTranscript() } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(Island.paperSoft)
+                }
+                .buttonStyle(.plain)
+            }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(transcript.entries) { entry in
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(entry.role == "user" ? "You" : "Claude")
+                                .font(.system(size: 9).weight(.bold))
+                                .foregroundStyle(entry.role == "user" ? Island.paperSoft : Island.accent)
+                            Text(entry.text)
+                                .font(.system(size: 11.5))
+                                .foregroundStyle(Island.paper)
+                                .textSelection(.enabled)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                }
+            }
+            .defaultScrollAnchor(.bottom)
         }
     }
 
@@ -266,32 +315,58 @@ struct IslandView: View {
                     .foregroundStyle(Island.paperSoft)
             } else {
                 ForEach(live) { session in
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(session.state == "working" ? Island.accent : Island.paperSoft)
-                                .frame(width: 6, height: 6)
-                            Text(session.title)
-                                .font(.system(size: 13).weight(.bold))
-                                .foregroundStyle(Island.paper)
-                                .lineLimit(1)
-                            Spacer()
-                            Text(session.state == "working" && !session.currentTool.isEmpty
-                                 ? "\(session.stateLabel) · \(session.currentTool)"
-                                 : session.stateLabel)
-                                .font(.system(size: 10))
-                                .foregroundStyle(Island.paperSoft)
-                        }
-                        if !session.lastPrompt.isEmpty {
-                            Text(session.lastPrompt)
-                                .font(.system(size: 11))
-                                .foregroundStyle(Island.paperSoft)
-                                .lineLimit(1)
-                                .padding(.leading, 12)
-                        }
-                    }
+                    SessionRow(session: session) { model.viewSession(session) }
                 }
             }
+        }
+    }
+
+    /// A clickable session row — click to peek at the transcript.
+    private struct SessionRow: View {
+        let session: SessionStatus
+        let onTap: () -> Void
+        @State private var hovered = false
+
+        var body: some View {
+            Button(action: onTap) {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(session.state == "working" ? Island.accent : Island.paperSoft)
+                            .frame(width: 6, height: 6)
+                        Text(session.title)
+                            .font(.system(size: 13).weight(.bold))
+                            .foregroundStyle(Island.paper)
+                            .lineLimit(1)
+                        if hovered {
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 8, weight: .bold))
+                                .foregroundStyle(Island.paperSoft)
+                        }
+                        Spacer()
+                        Text(session.state == "working" && !session.currentTool.isEmpty
+                             ? "\(session.stateLabel) · \(session.currentTool)"
+                             : session.stateLabel)
+                            .font(.system(size: 10))
+                            .foregroundStyle(Island.paperSoft)
+                    }
+                    if !session.lastPrompt.isEmpty {
+                        Text(session.lastPrompt)
+                            .font(.system(size: 11))
+                            .foregroundStyle(Island.paperSoft)
+                            .lineLimit(1)
+                            .padding(.leading, 12)
+                    }
+                }
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background(hovered ? Island.slate.opacity(0.5) : .clear,
+                            in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .onHover { hovered = $0 }
+            .help("Click to peek at this session's transcript")
         }
     }
 
