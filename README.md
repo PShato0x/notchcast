@@ -30,7 +30,7 @@ notchai restart     # bounce the relay + island
 notchai uninstall   # remove services and app
 ```
 
-Prefer to read before piping to bash? Quite right: [get.sh](get.sh). Manual setup is documented below. **Website: [pshato0x.github.io/notchai](https://pshato0x.github.io/notchai/)**
+Prefer to read before piping to bash? Quite right: [get.sh](get.sh). Manual setup is documented below. **Website: [notchai-production.up.railway.app](https://notchai-production.up.railway.app/)**
 
 ## Features
 
