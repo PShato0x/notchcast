@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // NotchAI relay server.
-// Runs on the Mac next to Claude Code. Hooks POST events here; the iOS app
-// and widget poll /status and answer permission requests via /respond.
+// Runs on the Mac next to Claude Code. Hooks POST events here; clients (the
+// island) poll /status and answer permission requests via /respond.
 // Zero dependencies — requires Node 18+.
 
 import http from 'node:http';
@@ -26,6 +26,9 @@ function saveJSON(p, value) {
 
 const fileConfig = loadJSON(CONFIG_PATH, {});
 const PORT = Number(process.env.CW_PORT || fileConfig.port || 8787);
+// Localhost-only by default; set host: "0.0.0.0" in config.json to pair a
+// remote client (use Tailscale — never expose this port to the internet).
+const HOST = process.env.CW_HOST || fileConfig.host || '127.0.0.1';
 const TOKEN = process.env.CW_TOKEN || fileConfig.token;
 const GATE_TIMEOUT_MS = Number(process.env.CW_GATE_TIMEOUT_MS || fileConfig.gateTimeoutMs || 120_000);
 const CLAUDE_BIN = process.env.CW_CLAUDE_BIN || fileConfig.claudeBin || 'claude';
@@ -341,11 +344,12 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  const nets = os.networkInterfaces();
-  const lan = Object.values(nets).flat().find((n) => n && n.family === 'IPv4' && !n.internal);
-  console.log(`NotchAI relay listening on port ${PORT}`);
-  console.log(`  local:  http://127.0.0.1:${PORT}`);
-  if (lan) console.log(`  LAN:    http://${lan.address}:${PORT}  <- use this in the iOS app`);
+server.listen(PORT, HOST, () => {
+  console.log(`NotchAI relay listening on http://${HOST}:${PORT}`);
+  if (HOST !== '127.0.0.1') {
+    const nets = os.networkInterfaces();
+    const lan = Object.values(nets).flat().find((n) => n && n.family === 'IPv4' && !n.internal);
+    if (lan) console.log(`  reachable on the network at http://${lan.address}:${PORT} — keep the token safe`);
+  }
   console.log(`  remote approvals: ${remoteMode ? 'ON' : 'OFF'}`);
 });

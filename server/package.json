@@ -1,7 +1,7 @@
 {
   "name": "notchai-relay",
   "version": "0.1.0",
-  "description": "Relay server between Claude Code hooks and the NotchAI iOS app",
+  "description": "Relay server between Claude Code hooks and the NotchAI island",
   "type": "module",
   "main": "server.js",
   "scripts": {

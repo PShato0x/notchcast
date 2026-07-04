@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // PreToolUse hook: forwards the permission request to the NotchAI relay
-// and waits for a decision from the iPhone.
+// and waits for a decision from the island.
 //
 // Output contract (Claude Code hooks):
 //   - print {"hookSpecificOutput":{"permissionDecision":"allow"|"deny", ...}} to decide

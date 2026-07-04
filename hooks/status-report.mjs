@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Fire-and-forget status hook: posts every hook event to the NotchAI
-// relay so the iOS widget can show what the session is doing.
+// relay so the island can show what the session is doing.
 // Never blocks or fails the session — always exits 0 quickly.
 
 import fs from 'node:fs';

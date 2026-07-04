@@ -135,7 +135,5 @@ $(printf '\033[1m')NotchAI v$VERSION installed.$(printf '\033[0m')
   ✳ Restart any open Claude Code sessions so they pick up the hooks.
   ✳ CLI: notchai {status|update|restart|uninstall}
 $( [[ ":$PATH:" != *":$BIN_DIR:"* ]] && echo "    (add ~/.local/bin to your PATH to use it)" )
-  ✳ Pairing an iPhone later? Server URL http://<this-mac>:8787, token in
-    ~/.notchai/config.json
 
 EOF

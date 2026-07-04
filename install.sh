@@ -30,8 +30,6 @@ EOF
   echo "Wrote $CONFIG"
 fi
 
-LAN_IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo "<your-mac-ip>")
-
 cat <<EOF
 
 Done. Next steps:
@@ -43,8 +41,10 @@ Done. Next steps:
 2. Start the relay (keep it running while you work):
      node "$REPO_DIR/server/server.js"
 
-3. In the iOS app settings, enter:
-     Server URL: http://$LAN_IP:8787
-     Token:      $TOKEN
+3. Build and launch the island:
+     cd "$REPO_DIR/macos" && ./build.sh --run
+
+(Or skip all of this next time: get.sh does every step, including the
+launchd service and Login Item.)
 
 EOF
