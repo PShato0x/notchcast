@@ -35,6 +35,18 @@ final class StatusModel: ObservableObject {
     /// don't render there, so views draw static stand-ins instead.
     var renderingStatic = false
 
+    /// Hidden for now: reply-to-session from the notch. Re-enable with
+    /// "experimentalReply": true in ~/.notchcast/config.json.
+    let replyEnabled: Bool = {
+        let path = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent(".notchcast/config.json")
+        guard
+            let data = try? Data(contentsOf: path),
+            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        else { return false }
+        return json["experimentalReply"] as? Bool ?? false
+    }()
+
     private var client: RelayClient? = RelayClient.fromConfigFile()
     private var pollTask: Task<Void, Never>?
     private var collapseTask: Task<Void, Never>?

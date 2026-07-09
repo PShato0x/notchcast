@@ -54,7 +54,11 @@ done
 
 # ---------- source checkout ----------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-/dev/null}")" 2>/dev/null && pwd || true)"
-if [[ -n "${SCRIPT_DIR:-}" && -f "$SCRIPT_DIR/server/server.js" && -e "$SCRIPT_DIR/.git" ]]; then
+if [[ -n "${NOTCHCAST_SRC:-}" && -f "$NOTCHCAST_SRC/server/server.js" ]]; then
+  # Homebrew-managed: the formula bakes NOTCHCAST_SRC into the CLI wrapper.
+  SRC="$NOTCHCAST_SRC"
+  say "Using Homebrew install: $SRC"
+elif [[ -n "${SCRIPT_DIR:-}" && -f "$SCRIPT_DIR/server/server.js" && -e "$SCRIPT_DIR/.git" ]]; then
   SRC="$SCRIPT_DIR"
   say "Using this checkout: $SRC"
 else
@@ -89,14 +93,21 @@ say "Merging hooks into ~/.claude/settings.json"
 node "$SRC/hooks/merge-settings.mjs"
 
 # ---------- CLI ----------
-mkdir -p "$BIN_DIR"
-cp "$SRC/bin/notchcast" "$BIN_DIR/notchcast"
-chmod +x "$BIN_DIR/notchcast"
+if [[ -z "${NOTCHCAST_SRC:-}" ]]; then
+  # Homebrew owns the CLI in its own bin; only install ours for git installs.
+  mkdir -p "$BIN_DIR"
+  cp "$SRC/bin/notchcast" "$BIN_DIR/notchcast"
+  chmod +x "$BIN_DIR/notchcast"
+fi
 
 # ---------- build the island ----------
-say "Building NotchCast.app (first build takes ~30s)"
-bash "$SRC/macos/build.sh" | grep -v '^note:' || true
-[[ -x "$SRC/macos/NotchCast.app/Contents/MacOS/NotchCast" ]] || fail "island build failed — see output above"
+if [[ -n "${NOTCHCAST_SRC:-}" && -x "$SRC/macos/NotchCast.app/Contents/MacOS/NotchCast" ]]; then
+  say "Using the NotchCast.app built by Homebrew"
+else
+  say "Building NotchCast.app (first build takes ~30s)"
+  bash "$SRC/macos/build.sh" | grep -v '^note:' || true
+  [[ -x "$SRC/macos/NotchCast.app/Contents/MacOS/NotchCast" ]] || fail "island build failed — see output above"
+fi
 
 if [[ "$NO_SERVICES" == "0" ]]; then
   # ---------- relay as a launchd service ----------

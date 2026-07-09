@@ -245,8 +245,15 @@ struct IslandView: View {
                 }
             }
             .defaultScrollAnchor(.bottom)
-            HStack(spacing: 8) {
-                Image(systemName: "arrowshape.turn.up.left")
+            if model.replyEnabled {
+                replyRow(sessionID: sessionID)
+            }
+        }
+    }
+
+    private func replyRow(sessionID: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "arrowshape.turn.up.left")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(Island.accent)
                 if model.renderingStatic {
@@ -261,13 +268,12 @@ struct IslandView: View {
                         .foregroundStyle(Island.paper)
                         .tint(Island.accent)
                         .disableAutocorrection(true)
-                        .onSubmit { model.submitReply(sessionID: sessionID) }
-                }
+                    .onSubmit { model.submitReply(sessionID: sessionID) }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
-            .background(Island.slate.opacity(0.7), in: Capsule())
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .background(Island.slate.opacity(0.7), in: Capsule())
     }
 
     private var header: some View {

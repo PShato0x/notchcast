@@ -15,7 +15,15 @@
 </p>
 <p align="center"><sub>The stills are rendered from the real SwiftUI views — regenerate anytime with <code>macos/build.sh --readme-assets</code>.</sub></p>
 
-## Install (one line)
+## Install
+
+**Homebrew:**
+
+```bash
+brew install pshato0x/tap/notchcast && notchcast setup
+```
+
+**Or the one-liner** (clones to `~/.notchcast/src`, updates via `notchcast update`):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/PShato0x/notchcast/main/get.sh | bash
@@ -92,8 +100,8 @@ Then merge [hooks/settings.example.json](hooks/settings.example.json) into `~/.c
 
 - [x] Quick Ask input right in the notch *(v0.6.0)*
 - [x] Click a session to peek at its transcript ("View Session") *(v0.7.0)*
-- [x] Reply to a session from the notch — type "continue" and Claude keeps working *(v0.8.0)*
-- [ ] Homebrew tap (`brew install notchcast`)
+- [x] Reply to a session from the notch *(v0.8.0 — currently hidden behind the `experimentalReply` config flag)*
+- [x] Homebrew tap (`brew install pshato0x/tap/notchcast`) *(v0.9.0)*
 - [ ] Adapters for more agents (Codex CLI, Gemini CLI) over the same relay protocol
 
 ## Contributing

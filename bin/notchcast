@@ -6,14 +6,23 @@ CW_DIR="$HOME/.notchcast"
 CFG="$CW_DIR/config.json"
 LABEL="dev.notchcast.relay"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+CMD="${1:-help}"
 
-[[ -f "$CFG" ]] || { echo "Not installed — run the installer first (see https://github.com/PShato0x/notchcast)"; exit 1; }
+# `notchcast setup` must work before any config exists (Homebrew first run:
+# brew install → notchcast setup). NOTCHCAST_SRC is baked in by the formula.
+if [[ "$CMD" == "setup" ]]; then
+  SRC="${NOTCHCAST_SRC:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+  [[ -f "$SRC/get.sh" ]] || { echo "Can't locate the NotchCast source at $SRC"; exit 1; }
+  exec bash "$SRC/get.sh"
+fi
+
+[[ -f "$CFG" ]] || { echo "Not set up yet — run: notchcast setup   (or see https://github.com/PShato0x/notchcast)"; exit 1; }
 
 cfg() { node -e "console.log(JSON.parse(require('fs').readFileSync('$CFG','utf8')).$1 ?? '')"; }
-SRC="$(cfg srcDir)"
+SRC="${NOTCHCAST_SRC:-$(cfg srcDir)}"
 TOKEN="$(cfg token)"
 PORT="$(cfg port)"; PORT="${PORT:-8787}"
-[[ -d "$SRC" ]] || { echo "Source checkout missing ($SRC) — re-run the installer."; exit 1; }
+[[ -d "$SRC" ]] || { echo "Source missing ($SRC) — re-run: notchcast setup"; exit 1; }
 
 relaunch_island() {
   pkill -x NotchCast 2>/dev/null || true
@@ -21,9 +30,15 @@ relaunch_island() {
   open "$SRC/macos/NotchCast.app"
 }
 
-case "${1:-help}" in
+case "$CMD" in
   update)
     echo "Current: v$(cat "$SRC/VERSION" 2>/dev/null || echo '?')"
+    if [[ ! -e "$SRC/.git" ]]; then
+      # Homebrew-managed install: brew owns the source tree.
+      echo "Installed via Homebrew — update with:"
+      echo "  brew upgrade notchcast && notchcast setup"
+      exit 0
+    fi
     # get.sh is idempotent: pulls, rebuilds, reinstalls services, relaunches.
     exec bash "$SRC/get.sh"
     ;;
@@ -70,6 +85,7 @@ let d=''; process.stdin.on('data',c=>d+=c).on('end',()=>{
   help|*)
     cat <<'EOF'
 notchcast — Claude Code status on your Mac's notch
+  setup       first-time setup (or repair): hooks, relay service, island
   status      relay version, sessions, pending approvals
   update      pull the latest version, rebuild, restart
   restart     restart the relay service and the island app
