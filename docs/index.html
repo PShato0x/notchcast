@@ -81,7 +81,8 @@
     <span class="cmd-scroll"><code id="cmd">curl -fsSL https://raw.githubusercontent.com/PShato0x/notchcast/main/get.sh | bash</code></span>
     <button class="copy" onclick="navigator.clipboard.writeText(document.getElementById('cmd').textContent).then(()=>{this.textContent='Copied ✓';setTimeout(()=>this.textContent='Copy',1600)})">Copy</button>
   </div>
-  <p class="meta"><span id="ver">v0.4.2</span><span>macOS 14+</span><span>Apple Silicon</span><span>builds from source</span><span>MIT</span></p>
+  <p class="meta">or <code style="font-family:var(--mono);color:#D4D4D8">brew install pshato0x/tap/notchcast</code></p>
+  <p class="meta"><span id="ver">v0.9.0</span><span>macOS 14+</span><span>Apple Silicon</span><span>builds from source</span><span>MIT</span></p>
   <script>
     fetch('https://raw.githubusercontent.com/PShato0x/notchcast/main/VERSION')
       .then(r => r.ok ? r.text() : null)
