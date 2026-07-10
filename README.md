@@ -45,7 +45,6 @@ Prefer to read before piping to bash? Quite right: [get.sh](get.sh). Manual setu
 - **Collapsed**: a slim black extension of the notch with a status dot — the signature orange pulse while the agent works, bright amber when something needs you, green when idle.
 - **Auto-expands** when the agent requests permission, showing **Always allow / Allow once / Deny** right under the notch. *Always allow* saves a rule (e.g. `Bash:npm`) that auto-approves matching requests from then on.
 - **Hover** over the notch anytime to peek at active sessions and their last prompt, and to toggle remote approvals.
-- **Quick Ask** — type a question into the notch; the relay runs a headless `claude -p` in your most recent session's project and the answer appears right there. (Requires the `claude` CLI to be logged in: `claude /login` once.)
 - **Never steals focus** — it's a non-activating panel; clicking buttons doesn't interrupt what you're doing. Menu-bar ✦ icon as fallback for Macs without a notch.
 - **Fails open, fails safe** — if the relay is down or you don't answer in time, the agent falls back to its normal terminal prompt. Nothing is auto-approved without you.
 - **Brand-neutral by design** — Claude Code is the first supported agent; the relay protocol and UI are agent-agnostic so other coding agents can plug in (see roadmap).
@@ -94,11 +93,11 @@ Then merge [hooks/settings.example.json](hooks/settings.example.json) into `~/.c
 
 - The permission gate waits up to 2 minutes (configurable via `gateTimeoutMs`) for a click, then falls back to the terminal prompt.
 - The relay keeps session state in memory — restarting it clears session history (rules and config persist on disk).
-- Quick Ask runs a fresh headless `claude -p` per question — it doesn't inject into a live session, and it needs the CLI logged in (`claude /login`) separately from the desktop app.
+- The relay's headless-run endpoints (`/ask`, `/session/:id/reply`) are API-only — no island UI — and need the CLI logged in (`claude /login`) separately from the desktop app.
 
 ## Roadmap
 
-- [x] Quick Ask input right in the notch *(v0.6.0)*
+- [x] ~~Quick Ask input right in the notch~~ *(shipped v0.6.0, removed from the UI in v0.9.2 — the relay's `/ask` endpoint remains for API use)*
 - [x] Click a session to peek at its transcript ("View Session") *(v0.7.0)*
 - [x] ~~Reply to a session from the notch~~ *(shipped v0.8.0, removed from the UI in v0.9.1 — the relay's `/session/:id/reply` endpoint remains for API use)*
 - [x] Homebrew tap (`brew install pshato0x/tap/notchcast`) *(v0.9.0)*

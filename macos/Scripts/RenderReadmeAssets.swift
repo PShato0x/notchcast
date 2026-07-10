@@ -33,7 +33,6 @@ enum RenderReadmeAssets {
 
         // Expanded on hover, just showing session status.
         let statusModel = StatusModel()
-        statusModel.renderingStatic = true
         statusModel.apply(
             snapshot: StatusSnapshot(remoteMode: true, serverTime: now,
                                      sessions: [session], pending: [], rules: []),

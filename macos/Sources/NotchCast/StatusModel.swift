@@ -10,30 +10,12 @@ final class StatusModel: ObservableObject {
     /// Set from the SwiftUI view; keeps the island open while the mouse is on it.
     @Published var hovering = false { didSet { recomputeExpansion() } }
 
-    // MARK: Quick Ask
-
-    enum AskState: Equatable {
-        case idle
-        case running(prompt: String)
-        case answer(String)
-        case error(String)
-    }
-
-    @Published private(set) var askState: AskState = .idle {
-        didSet { updateBodyHeight(); recomputeExpansion() }
-    }
-    /// Bound to the notch input; a non-empty draft pins the island open.
-    @Published var askDraft = "" { didSet { recomputeExpansion() } }
-    /// Height the expanded body should adopt (answers need more room).
+    /// Height the expanded body should adopt (transcripts need more room).
     @Published private(set) var bodyHeight: CGFloat = Island.expandedBodyHeight
 
     /// Screen metrics injected by the app delegate so views can hug the notch.
     var notchWidth: CGFloat = 196
     var barHeight: CGFloat = 37
-
-    /// Set by the offscreen asset renderer: AppKit-backed controls (TextField)
-    /// don't render there, so views draw static stand-ins instead.
-    var renderingStatic = false
 
     private var client: RelayClient? = RelayClient.fromConfigFile()
     private var pollTask: Task<Void, Never>?
@@ -43,8 +25,6 @@ final class StatusModel: ObservableObject {
     var pinnedOpen: Bool {
         !snapshot.pending.isEmpty
             || snapshot.liveSessions.contains { $0.state == "attention" }
-            || askState != .idle
-            || !askDraft.isEmpty
             || transcriptState != .idle
     }
 
@@ -99,52 +79,6 @@ final class StatusModel: ObservableObject {
         }
     }
 
-    func submitAsk() {
-        let prompt = askDraft.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !prompt.isEmpty, askState != .running(prompt: prompt), let client else { return }
-        askState = .running(prompt: prompt)
-        askDraft = ""
-        Task {
-            do {
-                // Run in the most recent session's project so answers have context.
-                let cwd = snapshot.liveSessions.first?.cwd
-                let id = try await client.startAsk(prompt: prompt, cwd: cwd)
-                await pollAskJob(id: id, prompt: prompt)
-            } catch {
-                askState = .error(error.localizedDescription)
-            }
-        }
-    }
-
-    private func pollAskJob(id: String, prompt: String) async {
-        guard let client else { return }
-        do {
-            for _ in 0..<150 { // up to ~5 minutes
-                try await Task.sleep(for: .seconds(2))
-                guard askState == .running(prompt: prompt) else { return } // dismissed
-                let job = try await client.askResult(id: id)
-                if job.state == "done" {
-                    // Headless runs use the CLI's own login, which may be
-                    // missing even when the desktop app is signed in.
-                    if job.answer.contains("authentication_error") || job.answer.contains("Not logged in") {
-                        askState = .error("The claude CLI isn't logged in on this Mac. Run `claude /login` in a terminal once, then ask again.")
-                    } else {
-                        askState = .answer(job.answer)
-                    }
-                    return
-                }
-                if job.state == "error" { askState = .error(job.error); return }
-            }
-            askState = .error("Timed out waiting for an answer.")
-        } catch {
-            askState = .error(error.localizedDescription)
-        }
-    }
-
-    func dismissAsk() {
-        askState = .idle
-    }
-
     // MARK: View Session (transcript peek)
 
     enum TranscriptState: Equatable {
@@ -175,10 +109,6 @@ final class StatusModel: ObservableObject {
     }
 
     private func updateBodyHeight() {
-        switch askState {
-        case .answer, .error: bodyHeight = 280; return
-        default: break
-        }
         switch transcriptState {
         case .loaded, .error: bodyHeight = 300
         default: bodyHeight = Island.expandedBodyHeight

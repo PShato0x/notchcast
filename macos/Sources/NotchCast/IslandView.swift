@@ -106,31 +106,20 @@ struct IslandView: View {
                 // Approvals always take priority — the session is blocked on them.
                 requestSection(request, extra: model.snapshot.pending.count - 1)
             } else {
-                switch model.askState {
-                case .running(let prompt):
-                    askRunningSection(prompt)
-                case .answer(let answer):
-                    askResultSection(answer, isError: false) { model.dismissAsk() }
+                switch model.transcriptState {
+                case .loading(let title):
+                    Text("Opening \(title)…")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Island.paperSoft)
+                case .loaded(let transcript):
+                    transcriptSection(transcript)
                 case .error(let message):
-                    askResultSection(message, isError: true) { model.dismissAsk() }
+                    errorSection(message) { model.dismissTranscript() }
                 case .idle:
-                    switch model.transcriptState {
-                    case .loading(let title):
-                        Text("Opening \(title)…")
-                            .font(.system(size: 12))
-                            .foregroundStyle(Island.paperSoft)
-                    case .loaded(let transcript):
-                        transcriptSection(transcript)
-                    case .error(let message):
-                        askResultSection(message, isError: true) { model.dismissTranscript() }
-                    case .idle:
-                        if !model.connected {
-                            offlineSection
-                        } else {
-                            sessionsSection
-                            Spacer(minLength: 0)
-                            askInputRow
-                        }
+                    if !model.connected {
+                        offlineSection
+                    } else {
+                        sessionsSection
                     }
                 }
             }
@@ -141,60 +130,12 @@ struct IslandView: View {
         .frame(width: Island.expandedWidth, height: model.bodyHeight, alignment: .topLeading)
     }
 
-    // MARK: Quick Ask
-
-    private var askInputRow: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "sparkle")
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(Island.accent)
-            if model.renderingStatic {
-                Text("Ask anything…")
-                    .font(.system(size: 12))
-                    .foregroundStyle(Island.paperSoft)
-                Spacer(minLength: 0)
-            } else {
-                TextField("Ask anything…", text: $model.askDraft)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 12))
-                    .foregroundStyle(Island.paper)
-                    .tint(Island.accent)
-                    .disableAutocorrection(true)
-                    .onSubmit { model.submitAsk() }
-            }
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 7)
-        .background(Island.slate.opacity(0.7), in: Capsule())
-    }
-
-    private func askRunningSection(_ prompt: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(prompt)
-                .font(.system(size: 11))
-                .foregroundStyle(Island.paperSoft)
-                .lineLimit(2)
-            HStack(spacing: 8) {
-                StatusDot(state: .working)
-                Text("Thinking…")
-                    .font(.system(size: 14).weight(.semibold))
-                    .foregroundStyle(Island.paper)
-                Spacer()
-                Button("Cancel") { model.dismissAsk() }
-                    .buttonStyle(.plain)
-                    .font(.system(size: 11))
-                    .foregroundStyle(Island.paperSoft)
-            }
-        }
-    }
-
-    private func askResultSection(_ text: String, isError: Bool, onDismiss: @escaping () -> Void) -> some View {
+    private func errorSection(_ text: String, onDismiss: @escaping () -> Void) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Label(isError ? "Something went wrong" : "Answer",
-                      systemImage: isError ? "exclamationmark.triangle" : "sparkle")
+                Label("Something went wrong", systemImage: "exclamationmark.triangle")
                     .font(.system(size: 11).weight(.semibold))
-                    .foregroundStyle(isError ? .orange : Island.accent)
+                    .foregroundStyle(.orange)
                 Spacer()
                 Button(action: onDismiss) {
                     Image(systemName: "xmark.circle.fill")
