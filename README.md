@@ -100,7 +100,7 @@ Then merge [hooks/settings.example.json](hooks/settings.example.json) into `~/.c
 
 - [x] Quick Ask input right in the notch *(v0.6.0)*
 - [x] Click a session to peek at its transcript ("View Session") *(v0.7.0)*
-- [x] Reply to a session from the notch *(v0.8.0 — currently hidden behind the `experimentalReply` config flag)*
+- [x] ~~Reply to a session from the notch~~ *(shipped v0.8.0, removed from the UI in v0.9.1 — the relay's `/session/:id/reply` endpoint remains for API use)*
 - [x] Homebrew tap (`brew install pshato0x/tap/notchcast`) *(v0.9.0)*
 - [ ] Adapters for more agents (Codex CLI, Gemini CLI) over the same relay protocol
 

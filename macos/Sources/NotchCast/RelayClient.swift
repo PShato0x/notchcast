@@ -152,11 +152,4 @@ struct RelayClient {
     func transcript(sessionID: String) async throws -> Transcript {
         try JSONDecoder().decode(Transcript.self, from: try await request("session/\(sessionID)/transcript"))
     }
-
-    /// Continue a session's conversation ("continue", "now add tests", …).
-    func replySession(sessionID: String, prompt: String) async throws -> String {
-        struct Started: Codable { var id: String }
-        let data = try await request("session/\(sessionID)/reply", method: "POST", body: ["prompt": prompt])
-        return try JSONDecoder().decode(Started.self, from: data).id
-    }
 }

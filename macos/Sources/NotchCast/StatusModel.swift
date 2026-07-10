@@ -35,18 +35,6 @@ final class StatusModel: ObservableObject {
     /// don't render there, so views draw static stand-ins instead.
     var renderingStatic = false
 
-    /// Hidden for now: reply-to-session from the notch. Re-enable with
-    /// "experimentalReply": true in ~/.notchcast/config.json.
-    let replyEnabled: Bool = {
-        let path = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".notchcast/config.json")
-        guard
-            let data = try? Data(contentsOf: path),
-            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-        else { return false }
-        return json["experimentalReply"] as? Bool ?? false
-    }()
-
     private var client: RelayClient? = RelayClient.fromConfigFile()
     private var pollTask: Task<Void, Never>?
     private var collapseTask: Task<Void, Never>?
@@ -57,7 +45,6 @@ final class StatusModel: ObservableObject {
             || snapshot.liveSessions.contains { $0.state == "attention" }
             || askState != .idle
             || !askDraft.isEmpty
-            || !replyDraft.isEmpty
             || transcriptState != .idle
     }
 
@@ -163,22 +150,20 @@ final class StatusModel: ObservableObject {
     enum TranscriptState: Equatable {
         case idle
         case loading(title: String)
-        case loaded(RelayClient.Transcript, sessionID: String)
+        case loaded(RelayClient.Transcript)
         case error(String)
     }
 
     @Published private(set) var transcriptState: TranscriptState = .idle {
         didSet { updateBodyHeight(); recomputeExpansion() }
     }
-    /// Bound to the transcript reply field ("continue", "now add tests", …).
-    @Published var replyDraft = "" { didSet { recomputeExpansion() } }
 
     func viewSession(_ session: SessionStatus) {
         guard let client else { return }
         transcriptState = .loading(title: session.title)
         Task {
             do {
-                transcriptState = .loaded(try await client.transcript(sessionID: session.id), sessionID: session.id)
+                transcriptState = .loaded(try await client.transcript(sessionID: session.id))
             } catch {
                 transcriptState = .error("Couldn't load the transcript — the session may be too new or its file moved.")
             }
@@ -187,25 +172,6 @@ final class StatusModel: ObservableObject {
 
     func dismissTranscript() {
         transcriptState = .idle
-        replyDraft = ""
-    }
-
-    /// Continue the session's conversation from the notch. Reuses the ask
-    /// spinner/answer flow; the continued run also appears as a live session.
-    func submitReply(sessionID: String) {
-        let prompt = replyDraft.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !prompt.isEmpty, let client else { return }
-        replyDraft = ""
-        transcriptState = .idle
-        askState = .running(prompt: prompt)
-        Task {
-            do {
-                let id = try await client.replySession(sessionID: sessionID, prompt: prompt)
-                await pollAskJob(id: id, prompt: prompt)
-            } catch {
-                askState = .error(error.localizedDescription)
-            }
-        }
     }
 
     private func updateBodyHeight() {
